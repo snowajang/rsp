@@ -8,7 +8,6 @@ import { prisma } from "./lib/prisma.js";
 
 import session from 'express-session';
 import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -117,32 +116,17 @@ for (const filePath of routeFiles) {
 }
 
 // --- Swagger Config ---
-const swaggerOptions = {
-    definition: {
-        openapi: '3.0.0',
-        info: {
-            title: 'Linkage Center API',
-            version: '1.0.0',
-            description: 'API documentation for Linkage Center services'
-        },
-        servers: [
-            {
-                // ใช้ relative URL จะได้ไม่ต้องสน port จริง
-                url: '/',
-                description: 'Current server'
-            }
-        ]
-    },
-    // ให้ swagger-jsdoc ไปอ่าน JSDoc ใน controllers ทุกไฟล์ .route.js (รวม subfolder)
-    apis: [
-        path.join(__dirname, 'controllers', 'api/*.route.js')
-    ]
-};
-
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
-
-// เปิดหน้า Swagger UI ที่ /api-docs
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(
+    '/docs',
+    swaggerUi.serve,
+    swaggerUi.setup(null, {
+        explorer: true,
+        customSiteTitle: 'Linkage Center API Docs',
+        swaggerOptions: {
+            url: '/openapi.yaml'
+        }
+    })
+);
 // --- End Swagger Config ---
 
 

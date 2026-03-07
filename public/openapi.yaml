@@ -1,0 +1,736 @@
+openapi: 3.0.3
+info:
+  title: Linkage Center API
+  version: 1.1.0
+  description: |
+    เอกสาร API สำหรับระบบ Linkage Center และบริการตรวจสอบบัตร/สถานะประชาชน
+    โดย Swagger UI ถูกตั้งค่าให้ใช้งานกับ Express 5 และไฟล์ openapi.yaml โดยตรง
+
+    การยืนยันตัวตนของกลุ่ม Linkage รองรับ 2 รูปแบบ
+    1. Authorization: Bearer <token>
+    2. header ชื่อ token: <token>
+
+    เพื่อความสะดวกในการทดสอบผ่าน Swagger UI แนะนำให้ใช้ BearerAuth เป็นหลัก
+servers:
+  - url: /
+    description: Current server
+tags:
+  - name: Linkage Login
+    description: ขั้นตอนรับ token และยืนยันตัวตนกับ Linkage Center
+  - name: Linkage User
+    description: ตรวจสอบข้อมูลผู้ใช้งานหลัง login
+  - name: Linkage Request
+    description: ส่งคำขอข้อมูลไปยัง Linkage Center
+  - name: Linkage Session
+    description: ต่ออายุและยกเลิก session ของ Linkage
+  - name: CheckPop
+    description: ตรวจสอบสถานะบุคคล/บัตรจาก SOAP service
+  - name: CheckLaser
+    description: ตรวจสอบบัตรด้วยเลข Laser
+  - name: CheckChip
+    description: ตรวจสอบบัตรด้วย ChipNo และ bp1no
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: ใช้กับ endpoint กลุ่ม Linkage ที่ต้องมี token หลัง login
+    TokenHeader:
+      type: apiKey
+      in: header
+      name: token
+      description: รูปแบบเดิมของระบบ รองรับควบคู่กับ BearerAuth
+  headers:
+    XRequestId:
+      description: Correlation ID สำหรับ trace คำขอแต่ละรายการ
+      schema:
+        type: string
+        example: req-20260307-0001
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: body not variable is required
+    ErrorEnvelope:
+      type: object
+      required: [errorNumber, errorMessage, data]
+      properties:
+        errorNumber:
+          type: integer
+          example: 401
+        errorMessage:
+          type: string
+          nullable: true
+          example: Unauthorized
+        data:
+          nullable: true
+          oneOf:
+            - type: object
+            - type: 'null'
+    StandardApiEnvelope:
+      type: object
+      required: [errorNumber, errorMessage, data]
+      properties:
+        errorNumber:
+          type: integer
+          example: 0
+        errorMessage:
+          type: string
+          nullable: true
+          example: null
+        data:
+          description: ข้อมูลที่ส่งกลับจากบริการต้นทาง
+          oneOf:
+            - type: object
+            - type: array
+              items: {}
+            - type: string
+            - type: integer
+            - type: boolean
+            - type: 'null'
+    LinkageLoginSmcRequest:
+      type: object
+      required: [pid, cid]
+      properties:
+        pid:
+          type: string
+          pattern: '^\d{13}$'
+          description: เลขประจำตัวประชาชน 13 หลัก
+          example: '1234567890123'
+        cid:
+          type: string
+          description: เลข chip ของ Smart Card
+          example: A1B2C3D4E5F6
+    LinkageLoginSmcResponseData:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo
+        loginType:
+          type: integer
+          example: 1
+        officeID:
+          type: integer
+          example: 1001
+        personalID:
+          type: string
+          example: '1234567890123'
+        expiresIn:
+          type: integer
+          example: 900
+      additionalProperties: true
+    LinkageLoginSmcEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/StandardApiEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/LinkageLoginSmcResponseData'
+    LinkageLoginSmcAuthRequest:
+      type: object
+      required: [xrandom, xenvelop]
+      properties:
+        xrandom:
+          type: string
+          description: ค่า random ที่ได้จาก Linkage
+          example: 8f2db2f7c6a84cb9
+        xenvelop:
+          type: string
+          description: envelope ที่ได้จากบัตร
+          example: U0lHTkFUVVJFX0ZST01fQ0FSRA==
+    LinkageLoginThaiDRequest:
+      type: object
+      required: [accessToken]
+      properties:
+        pid:
+          type: string
+          pattern: '^\d{13}$'
+          description: เลขประจำตัวประชาชน (ถ้ามี)
+          example: '1234567890123'
+        name:
+          type: string
+          description: ชื่อ-สกุล ผู้ใช้งาน
+          example: สมชาย ใจดี
+        accessToken:
+          type: string
+          description: Access token ที่ได้จาก ThaiD
+          example: eyJhbGciOiJSUzI1NiIsImtpZCI6InRoYWlkIn0.demo
+    LinkageUserResponseData:
+      type: object
+      properties:
+        personalID:
+          type: string
+          example: '1234567890123'
+        fullName:
+          type: string
+          example: สมชาย ใจดี
+        officeID:
+          type: integer
+          example: 1001
+        officeName:
+          type: string
+          example: สำนักทะเบียนอำเภอตัวอย่าง
+        positionName:
+          type: string
+          example: เจ้าพนักงานปกครอง
+        roles:
+          type: array
+          items:
+            type: string
+          example: [viewer, operator]
+      additionalProperties: true
+    LinkageUserEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/StandardApiEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/LinkageUserResponseData'
+    LinkageSearchRequest:
+      type: object
+      description: Payload สำหรับส่งต่อไปยัง /api/center/request/ โดยตรง
+      required: [serviceName, requestBody]
+      properties:
+        serviceName:
+          type: string
+          description: รหัสหรือชื่อบริการที่ต้องการเรียกจาก Linkage Center
+          example: personal-info
+        requestBody:
+          type: object
+          description: ข้อมูลคำขอตาม service ที่เลือก
+          additionalProperties: true
+          example:
+            personalId: '1234567890123'
+            requestChannel: web
+        requestRef:
+          type: string
+          description: เลขอ้างอิงคำขอจากต้นทาง
+          example: LC-REQ-20260307-001
+      additionalProperties: true
+    LinkageSearchEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/StandardApiEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              additionalProperties: true
+              example:
+                transactionId: TXN-20260307-0001
+                resultCount: 1
+                items:
+                  - personalId: '1234567890123'
+                    fullName: สมชาย ใจดี
+    LinkageRenewRequest:
+      type: object
+      description: ข้อมูลเพิ่มเติมกรณี backend ต้องการระบุ context ของการ renew
+      properties:
+        reason:
+          type: string
+          example: keep-session-alive
+      additionalProperties: true
+    LinkageRenewEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/StandardApiEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.renewed
+                expiresIn:
+                  type: integer
+                  example: 900
+              additionalProperties: true
+    LinkageLogoutRequest:
+      type: object
+      description: Payload เพิ่มเติม (ถ้ามี)
+      properties:
+        reason:
+          type: string
+          example: user-request
+      additionalProperties: true
+    LinkageLogoutEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/StandardApiEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: logout completed
+              additionalProperties: true
+    CheckDeathRequest:
+      type: object
+      required: [targetId, dob]
+      properties:
+        targetId:
+          type: string
+          pattern: '^\d{13}$'
+          description: เลขประจำตัวประชาชน 13 หลัก
+          example: '1234567890123'
+        dob:
+          type: string
+          description: วันที่เกิดในรูปแบบที่ web service ต้องการ เช่น YYYYMMDD
+          example: '19800101'
+    CheckDeathResponseData:
+      type: object
+      properties:
+        stCode:
+          type: string
+          nullable: true
+          example: '0'
+        stDesc:
+          type: string
+          example: พบข้อมูลบุคคล
+        isError:
+          type: boolean
+          example: false
+        isErrorMessage:
+          type: string
+          example: ''
+    CheckDeathEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/StandardApiEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/CheckDeathResponseData'
+    CheckLaserRequest:
+      type: object
+      required: [pid, fname, lname, dob, laser]
+      properties:
+        pid:
+          type: string
+          pattern: '^\d{13}$'
+          description: เลขประจำตัวประชาชน 13 หลัก
+          example: '1234567890123'
+        fname:
+          type: string
+          description: ชื่อจริง
+          example: สมชาย
+        lname:
+          type: string
+          description: นามสกุล
+          example: ใจดี
+        dob:
+          type: string
+          description: วันเดือนปีเกิดในรูปแบบที่ service ต้องการ
+          example: '19800101'
+        laser:
+          type: string
+          description: เลข Laser ด้านหลังบัตรประชาชน
+          example: JT0-1234567-89
+    CheckLaserResponse:
+      type: object
+      properties:
+        isError:
+          type: boolean
+          example: false
+        isErrorDesc:
+          type: string
+          example: ''
+        code:
+          type: integer
+          example: 0
+        desc:
+          type: string
+          example: ตรวจสอบข้อมูลสำเร็จ
+    CheckChipRequest:
+      type: object
+      required: [pid, chipno, bp1no]
+      properties:
+        pid:
+          type: string
+          pattern: '^\d{13}$'
+          description: เลขประจำตัวประชาชน 13 หลัก
+          example: '1234567890123'
+        chipno:
+          type: string
+          description: หมายเลขชิปการ์ด (ChipNo)
+          example: A1B2C3D4E5F6
+        bp1no:
+          type: string
+          description: รหัส BP1 ตามที่ต้นทางกำหนดใช้
+          example: '0101'
+    CheckChipResponse:
+      type: object
+      properties:
+        isError:
+          type: boolean
+          example: false
+        isErrorDesc:
+          type: string
+          example: ''
+        code:
+          type: integer
+          example: 0
+        desc:
+          type: string
+          example: ตรวจสอบข้อมูลสำเร็จ
+  responses:
+    BadRequestError:
+      description: คำขอไม่ถูกต้องหรือข้อมูลไม่ครบ
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - $ref: '#/components/schemas/ErrorEnvelope'
+    InternalServerError:
+      description: เกิดข้อผิดพลาดภายในระบบ
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - $ref: '#/components/schemas/ErrorEnvelope'
+paths:
+  /linkage/api/login/smc:
+    post:
+      tags: [Linkage Login]
+      summary: Login ด้วยบัตร Smart Card (SMC)
+      description: ใช้เลขประจำตัวประชาชนและ Chip ID เพื่อขอ token เริ่มต้นจาก Linkage Center
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkageLoginSmcRequest'
+            examples:
+              sample:
+                value:
+                  pid: '1234567890123'
+                  cid: A1B2C3D4E5F6
+      responses:
+        '200':
+          description: Login สำเร็จ
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkageLoginSmcEnvelope'
+              examples:
+                success:
+                  value:
+                    errorNumber: 0
+                    errorMessage: null
+                    data:
+                      token: demo-linkage-token
+                      loginType: 1
+                      officeID: 1001
+                      personalID: '1234567890123'
+                      expiresIn: 900
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /linkage/api/login/smc/auth:
+    post:
+      tags: [Linkage Login]
+      summary: ยืนยันตัวตน SMC ด้วย random/envelope
+      description: ใช้ข้อมูลจากการลงนามของบัตร Smart Card เพื่อยืนยันการ login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkageLoginSmcAuthRequest'
+            examples:
+              sample:
+                value:
+                  xrandom: 8f2db2f7c6a84cb9
+                  xenvelop: U0lHTkFUVVJFX0ZST01fQ0FSRA==
+      responses:
+        '200':
+          description: ยืนยันตัวตนสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkageLoginSmcEnvelope'
+              examples:
+                success:
+                  value:
+                    errorNumber: 0
+                    errorMessage: null
+                    data:
+                      token: demo-confirmed-token
+                      loginType: 1
+                      expiresIn: 900
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /linkage/api/login/thaid/auth:
+    post:
+      tags: [Linkage Login]
+      summary: Login ด้วย ThaiD
+      description: ใช้ access token จาก ThaiD เพื่อยืนยันตัวตนกับ Linkage Center
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkageLoginThaiDRequest'
+            examples:
+              sample:
+                value:
+                  pid: '1234567890123'
+                  name: สมชาย ใจดี
+                  accessToken: eyJhbGciOiJSUzI1NiIsImtpZCI6InRoYWlkIn0.demo
+      responses:
+        '200':
+          description: Login ThaiD สำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkageLoginSmcEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /linkage/api/user:
+    post:
+      tags: [Linkage User]
+      summary: ดึงข้อมูลสิทธิ์/หน้าที่การงานของผู้ใช้
+      description: ตรวจสอบข้อมูลผู้ใช้งานจาก token หลัง login
+      security:
+        - BearerAuth: []
+        - TokenHeader: []
+      responses:
+        '200':
+          description: ดึงข้อมูลผู้ใช้สำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkageUserEnvelope'
+              examples:
+                success:
+                  value:
+                    errorNumber: 0
+                    errorMessage: null
+                    data:
+                      personalID: '1234567890123'
+                      fullName: สมชาย ใจดี
+                      officeID: 1001
+                      officeName: สำนักทะเบียนอำเภอตัวอย่าง
+                      positionName: เจ้าพนักงานปกครอง
+                      roles: [viewer, operator]
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /linkage/api/search:
+    post:
+      tags: [Linkage Request]
+      summary: ค้นหาข้อมูลโดยส่งคำขอไปยัง Linkage Center
+      description: ส่ง body ไปยังบริการต้นทางโดยตรงพร้อม token ที่ออกจากระบบ login
+      security:
+        - BearerAuth: []
+        - TokenHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkageSearchRequest'
+            examples:
+              search-person:
+                value:
+                  serviceName: personal-info
+                  requestRef: LC-REQ-20260307-001
+                  requestBody:
+                    personalId: '1234567890123'
+                    requestChannel: web
+      responses:
+        '200':
+          description: ค้นหาสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkageSearchEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /linkage/api/renew:
+    post:
+      tags: [Linkage Session]
+      summary: ต่ออายุ token ของ Linkage
+      description: ใช้ token ที่ยังไม่หมดอายุเพื่อขอ token หรือ session ใหม่
+      security:
+        - BearerAuth: []
+        - TokenHeader: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkageRenewRequest'
+            examples:
+              default:
+                value:
+                  reason: keep-session-alive
+      responses:
+        '200':
+          description: ต่ออายุสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkageRenewEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /linkage/api/logout:
+    post:
+      tags: [Linkage Session]
+      summary: Logout ออกจาก Linkage Center
+      description: ยกเลิก session ปัจจุบันด้วย token ที่ใช้งานอยู่
+      security:
+        - BearerAuth: []
+        - TokenHeader: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkageLogoutRequest'
+            examples:
+              default:
+                value:
+                  reason: user-request
+      responses:
+        '200':
+          description: Logout สำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkageLogoutEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /card/api/death:
+    post:
+      tags: [CheckPop]
+      summary: ตรวจสอบสถานะบุคคล/บัตร (CheckDeathStatus)
+      description: เรียก SOAP service เพื่อตรวจสอบสถานะจากเลขประชาชนและวันเกิด
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckDeathRequest'
+            examples:
+              sample:
+                value:
+                  targetId: '1234567890123'
+                  dob: '19800101'
+      responses:
+        '200':
+          description: ตรวจสอบสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckDeathEnvelope'
+              examples:
+                success:
+                  value:
+                    errorNumber: 0
+                    errorMessage: null
+                    data:
+                      stCode: '0'
+                      stDesc: พบข้อมูลบุคคล
+                      isError: false
+                      isErrorMessage: ''
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /card/api/checklaser:
+    post:
+      tags: [CheckLaser]
+      summary: ตรวจสอบบัตรด้วยเลข Laser (CheckCardByLaser)
+      description: ตรวจสอบข้อมูลบัตรจาก pid ชื่อ นามสกุล วันเกิด และเลข Laser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckLaserRequest'
+            examples:
+              sample:
+                value:
+                  pid: '1234567890123'
+                  fname: สมชาย
+                  lname: ใจดี
+                  dob: '19800101'
+                  laser: JT0-1234567-89
+      responses:
+        '200':
+          description: ตรวจสอบสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckLaserResponse'
+              examples:
+                success:
+                  value:
+                    isError: false
+                    isErrorDesc: ''
+                    code: 0
+                    desc: ตรวจสอบข้อมูลสำเร็จ
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /card/api/checkchip:
+    post:
+      tags: [CheckChip]
+      summary: ตรวจสอบบัตรด้วย ChipNo (CheckCardByCID)
+      description: ตรวจสอบข้อมูลบัตรจาก pid, chipno และ bp1no ผ่าน SOAP service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckChipRequest'
+            examples:
+              sample:
+                value:
+                  pid: '1234567890123'
+                  chipno: A1B2C3D4E5F6
+                  bp1no: '0101'
+      responses:
+        '200':
+          description: ตรวจสอบสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckChipResponse'
+              examples:
+                success:
+                  value:
+                    isError: false
+                    isErrorDesc: ''
+                    code: 0
+                    desc: ตรวจสอบข้อมูลสำเร็จ
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'

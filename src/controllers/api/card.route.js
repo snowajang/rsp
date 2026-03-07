@@ -5,63 +5,6 @@ import { XMLParser } from 'fast-xml-parser';
 const router = Router();
 const xmlParser = new XMLParser({ ignoreAttributes: false });
 
-/**
- * @swagger
- * /card/api/death:
- *   post:
- *     tags:
- *       - CheckPop
- *     summary: ตรวจสอบสถานะบัตรประชาชน (CheckCardStatus)
- *     description: >
- *       ตรวจสอบสถานะของ "บัตรประชาชน" จากเลขประจำตัวประชาชนและวันเดือนปีเกิด  
- *       ระบบจะส่งคำขอไปยังบริการ SOAP (CheckCardStatus) และแปลงผลให้เป็น JSON
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - targetId
- *               - dob
- *             properties:
- *               targetId:
- *                 type: string
- *                 description: เลขประจำตัวประชาชน 13 หลัก
- *                 example: "1234567890123"
- *               dob:
- *                 type: string
- *                 description: วันที่เกิดในรูปแบบที่ web service ต้องการ (เช่น YYYYMMDD)
- *                 example: "19800101"
- *     responses:
- *       200:
- *         description: ตรวจสอบสำเร็จ
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 stCode:
- *                   type: string
- *                   nullable: true
- *                   description: รหัสสถานะจากระบบต้นทาง
- *                 stDesc:
- *                   type: string
- *                   description: คำอธิบายสถานะ
- *                 isError:
- *                   type: boolean
- *                   description: ระบุว่าเกิด error จาก web service หรือไม่
- *                 errorMessage:
- *                   type: string
- *                   description: ข้อความอธิบาย error (ถ้ามี)
- *                 raw:
- *                   type: object
- *                   description: ข้อมูลดิบทั้งหมดที่ parse ได้จาก SOAP
- *       400:
- *         description: ข้อมูลไม่ครบ (ต้องมี targetId และ dob)
- *       500:
- *         description: ผิดพลาดภายในระบบหรือรูปแบบ SOAP Response ไม่ถูกต้อง
- */
 router.post("/api/death", async (req, res, next) => {
     try {
         const targetId = req.body.targetId;
@@ -158,76 +101,6 @@ async function callLaserSoap({ pid, fname, lname, dob, laser, timeoutMs = 20000 
     return { response, xml, json };
 }
 
-/**
- * @swagger
- * /card/api/checklaser:
- *   post:
- *     tags:
- *       - CheckLaser
- *     summary: ตรวจสอบบัตรประชาชนด้วยเลข Laser (CheckCardByLaser)
- *     description: >
- *       ตรวจสอบความถูกต้องของบัตรประชาชนโดยใช้เลขประจำตัวประชาชน  
- *       ชื่อ-สกุล วันเดือนปีเกิด และเลข Laser ด้านหลังบัตร ผ่านบริการ CheckCardByLaser (SOAP)
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - pid
- *               - fname
- *               - lname
- *               - dob
- *               - laser
- *             properties:
- *               pid:
- *                 type: string
- *                 description: เลขประจำตัวประชาชน 13 หลัก
- *                 example: "1234567890123"
- *               fname:
- *                 type: string
- *                 description: ชื่อจริง
- *                 example: "สมชาย"
- *               lname:
- *                 type: string
- *                 description: นามสกุล
- *                 example: "ใจดี"
- *               dob:
- *                 type: string
- *                 description: >
- *                   วันเดือนปีเกิดในรูปแบบที่ service ต้องการ  
- *                   (เช่น YYYYMMDD หรือ ddMMyyyy ตาม spec จริงของระบบ)
- *                 example: "19800101"
- *               laser:
- *                 type: string
- *                 description: เลข Laser ด้านหลังบัตรประชาชน
- *                 example: "JT0-1234567-89"
- *     responses:
- *       200:
- *         description: ตรวจสอบสำเร็จ (ฝั่ง SOAP ตอบกลับแล้ว)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 isError:
- *                   type: boolean
- *                   description: true ถ้าเกิด error จาก service
- *                 isErrorDesc:
- *                   type: string
- *                   description: รายละเอียด error (ถ้ามี)
- *                 code:
- *                   type: integer
- *                   description: รหัสผลลัพธ์จากต้นทาง (Code)
- *                 desc:
- *                   type: string
- *                   description: ข้อความอธิบายผลลัพธ์ (Desc)
- *       400:
- *         description: ข้อมูลไม่ครบ (ต้องมี pid, fname, lname, dob, laser)
- *       500:
- *         description: ผิดพลาดภายในระบบ หรือไม่สามารถติดต่อ service ได้
- */
 router.post('/api/checklaser', async (req, res, next) => {
     try {
         const { pid, fname, lname, dob, laser } = req.body || {};
@@ -334,64 +207,6 @@ async function callChipSoap({ pid, chipno, bp1no, timeoutMs = 20000 }) {
   return { response, xml, json };
 }
 
-/**
- * @swagger
- * /card/api/checkchip:
- *   post:
- *     tags:
- *       - CheckChip
- *     summary: ตรวจสอบบัตรประชาชนด้วย ChipNo (CheckCardByCID)
- *     description: >
- *       ตรวจสอบความถูกต้องของบัตรประชาชนโดยใช้  
- *       เลขบัตรประชาชน (pid) + ChipNo + bp1no ผ่านบริการ SOAP `CheckCardByCID`.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - pid
- *               - chipno
- *               - bp1no
- *             properties:
- *               pid:
- *                 type: string
- *                 description: เลขประจำตัวประชาชน 13 หลัก
- *                 example: "1234567890123"
- *               chipno:
- *                 type: string
- *                 description: หมายเลขชิปการ์ด (ChipNo)
- *                 example: "A1B2C3D4E5F6"
- *               bp1no:
- *                 type: string
- *                 description: รหัส BP1 (ตามที่ต้นทางกำหนดใช้)
- *                 example: "0101"
- *     responses:
- *       200:
- *         description: ตรวจสอบสำเร็จ (ได้คำตอบจาก CheckCardByCID แล้ว)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 isError:
- *                   type: boolean
- *                   description: true ถ้าเกิด error จาก service
- *                 isErrorDesc:
- *                   type: string
- *                   description: ข้อความอธิบาย error (ถ้ามี)
- *                 code:
- *                   type: integer
- *                   description: รหัสผลลัพธ์จากต้นทาง (Code)
- *                 desc:
- *                   type: string
- *                   description: ข้อความอธิบายผลลัพธ์ (Desc)
- *       400:
- *         description: ข้อมูลไม่ครบ (ต้องมี pid, chipno, bp1no)
- *       500:
- *         description: ผิดพลาดภายในระบบ หรือไม่สามารถติดต่อ service ได้
- */
 router.post('/api/checkchip', async (req, res) => {
     try {
         const { pid, chipno, bp1no } = req.body || {};
