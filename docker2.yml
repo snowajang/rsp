@@ -1,0 +1,49 @@
+name: 'linkage'
+
+services:
+  dbs:
+    image: mariadb:10.11
+    container_name: admin_mariadb_login
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: lkdb
+      MARIADB_USER: appuser
+      MARIADB_PASSWORD: apppass
+      TZ: Asia/Bangkok
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - dbs
+    environment:
+      ADMINER_DEFAULT_SERVER: dbs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command: php -S 0.0.0.0:8080 -t /var/www/html
+
+volumes:
+  db_data:
+
+networks:
+  default:
+    name: webnet
+    enable_ipv6: false
+    driver: bridge
+    external: true

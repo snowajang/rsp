@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+  admindbs:
+    image: mariadb:10.11
+    container_name: admin_mariadb_login
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: appdb
+      MARIADB_USER: appuser
+      MARIADB_PASSWORD: apppass
+      DATABASE_URL: ${DATABASE_URL}
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - admindbs
+    environment:
+      ADMINER_DEFAULT_SERVER: admindbs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  app:
+    build: .
+    container_name: admin_dashboard_login_app
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - admindbs
+    ports:
+      - "3000:3000"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  db_data:
+
+networks:
+  default:
+    name: webnet
+    driver: bridge
+    external: true

@@ -1,0 +1,84 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">Users</h4>
+
+  <form method="get" action="/users" class="d-flex align-items-center gap-2">
+    <input type="hidden" name="page" value="1">
+    <label class="text-muted small mb-0">แสดงต่อหน้า</label>
+    <select name="pageSize" class="form-select form-select-sm" style="width: 90px;" onchange="this.form.submit()">
+      <option value="10" <%= pagination.pageSize === 10 ? 'selected' : '' %>>10</option>
+      <option value="20" <%= pagination.pageSize === 20 ? 'selected' : '' %>>20</option>
+      <option value="30" <%= pagination.pageSize === 30 ? 'selected' : '' %>>30</option>
+    </select>
+  </form>
+</div>
+
+<div class="alert alert-info">
+  การสร้างผู้ใช้ใหม่ผ่าน UI ยังไม่ได้ implement (ส่ง 501) ให้สร้างผู้ใช้ผ่าน Prisma Studio หรือคำสั่ง SQL แทน แล้วตั้งรหัสผ่านเป็น hash ด้วย bcryptjs
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <strong>User List</strong>
+    <div class="small text-muted">
+      หน้า <%= pagination.page %>/<%= pagination.totalPages %> (ทั้งหมด <%= pagination.totalItems %>)
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th style="width:60px;">#</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th style="width:120px;">Role</th>
+          <th style="width:200px;">Created</th>
+          <th class="text-end" style="width:120px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (users && users.length) { %>
+          <% users.forEach((u, idx) => { %>
+            <% const displayIndex = ((pagination.page - 1) * pagination.pageSize) + (idx + 1); %>
+            <tr>
+              <td><%= displayIndex %></td>
+              <td><%= u.name || '' %></td>
+              <td><%= u.email || '' %></td>
+              <td>
+                <span class="badge bg-<%= (u.role === 'admin' ? 'danger' : 'secondary') %>">
+                  <%= u.role || '' %>
+                </span>
+              </td>
+              <td>
+                <%= (u.createdAt && typeof u.createdAt.toLocaleString === 'function')
+                      ? u.createdAt.toLocaleString('th-TH')
+                      : (u.createdAt || '') %>
+              </td>
+              <td class="text-end">
+                <form method="post"
+                      action="/users/<%= u.pid %>/delete?page=<%= pagination.page %>&pageSize=<%= pagination.pageSize %>"
+                      onsubmit="return confirm('ลบผู้ใช้คนนี้?');"
+                      class="d-inline">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="6" class="text-center py-4">ยังไม่มีข้อมูลผู้ใช้</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+    <div class="btn-group">
+      <a class="btn btn-sm btn-outline-secondary <%= pagination.hasPrev ? '' : 'disabled' %>"
+         href="/users?page=<%= pagination.page - 1 %>&pageSize=<%= pagination.pageSize %>">ก่อนหน้า</a>
+      <a class="btn btn-sm btn-outline-secondary <%= pagination.hasNext ? '' : 'disabled' %>"
+         href="/users?page=<%= pagination.page + 1 %>&pageSize=<%= pagination.pageSize %>">ถัดไป</a>
+    </div>
+  </div>
+</div>
