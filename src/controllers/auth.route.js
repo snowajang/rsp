@@ -89,7 +89,7 @@ router.post('/thaid', ensureGuest, async (req, res, next) => {
                 update: { name, token: itoken.data.token },
                 create: { pid: Number(pid), name, email: 'admin@console.com', username: 'preuser', token: itoken.data.token, role: 'user', passwordHash: '' }
             });
-            req.prisma.disconnect();
+            
             req.session.user = {
                 id: pid,
                 name: name,
