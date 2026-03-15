@@ -6,17 +6,25 @@
   const isSmartcardSection = path.startsWith('/smartcard'); // parent
   const isSmartcardRead = path === '/smartcard' || path.startsWith('/smartcard/read');
   const isSmartcardLogs = path.startsWith('/smartcard/logs');
+  const isJobWork = path.startsWith('/job');
+  const isJobWork1 = path.startsWith('/job/work1') && !path.startsWith('/job/work10');
+  const isJobWork2 = path.startsWith('/job/work2');
+  const isJobWork3 = path.startsWith('/job/work3');
+  const isJobWork4 = path.startsWith('/job/work4');
+  const isJobWork5 = path.startsWith('/job/work5');
+  const isJobWork6 = path.startsWith('/job/work6');
+  const isJobWork7 = path.startsWith('/job/work7');
+  const isJobWork8 = path.startsWith('/job/work8');
+  const isJobWork9 = path.startsWith('/job/work9');
+  const isJobWork10 = path.startsWith('/job/work10');
   const isDocs = path.startsWith('/docs');
 %>
 
 <div id="sidebar-wrapper" class="d-flex flex-column">
   <div class="sidebar-heading">
-    <div class="brand-badge">
-      <i class="bi bi-grid-1x2"></i>
-    </div>
     <div>
-      <div>Admin Panel</div>
-      <small class="text-white-50">Smart Service Console</small>
+      <div>Linkage EXAT</div>
+      <small class="text-white-50">ตรวจสอบและค้นหาข้อมูล</small>
     </div>
   </div>
 
@@ -27,11 +35,22 @@
       <i class="bi bi-speedometer2"></i>
       <span>Dashboard</span>
     </a>
-
+    <% if (isAuthenticated && currentUser) { %>
     <!-- Users -->
     <a href="/users" class="list-group-item list-group-item-action <%= isUsers ? 'active' : '' %>">
       <i class="bi bi-people"></i>
       <span>ผู้ใช้งาน</span>
+    </a>
+    <!-- Users -->
+    <a href="/state" class="list-group-item list-group-item-action <%= isUsers ? 'active' : '' %>">
+      <i class="bi bi-people"></i>
+      <span>ไทยดี</span>
+    </a>
+    <% } %>
+    <!-- Docs -->
+    <a href="/docs" target="_blank" class="list-group-item list-group-item-action <%= isDocs ? 'active' : '' %>">
+      <i class="bi bi-braces-asterisk"></i>
+      <span>API</span>
     </a>
 
     <!-- Smartcard section with submenu -->
@@ -53,11 +72,48 @@
       </div>
     </div>
 
-    <!-- Docs -->
-    <a href="/docs" target="_blank" class="list-group-item list-group-item-action <%= isDocs ? 'active' : '' %>">
-      <i class="bi bi-braces-asterisk"></i>
-      <span>API</span>
-    </a>
+    <!-- JOB Work -->
+    <div class="list-group-item list-group-item-action sidebar-parent <%= isJobWork ? 'active-parent' : '' %>">
+      <div class="d-flex align-items-center justify-content-between sidebar-parent-toggle" data-bs-toggle="collapse" data-bs-target="#jobworkSubmenu" aria-expanded="<%= isJobWork ? 'true' : 'false' %>">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-credit-card-2-front"></i>
+          <span>กระบวนงาน</span>
+        </div>
+        <i class="bi bi-chevron-right small sidebar-parent-arrow <%= isJobWork ? 'rotate' : '' %>"></i>
+      </div>
+      <div id="jobworkSubmenu" class="collapse sidebar-submenu <%= isJobWork ? 'show' : '' %>">
+        <a href="/job/work1" class="sidebar-subitem <%= isJobWork1 ? 'active-sub' : '' %>">
+          <span>ข้อมูลปรับพินัย</span>
+        </a>
+        <a href="/job/work2" class="sidebar-subitem <%= isJobWork2 ? 'active-sub' : '' %>">
+          <span>ข้อมูลปรับพินัย กจค.1</span>
+        </a>
+        <a href="/job/work3" class="sidebar-subitem <%= isJobWork3 ? 'active-sub' : '' %>">
+          <span>ข้อมูลปรับพินัย กจค.2</span>
+        </a>
+        <a href="/job/work4" class="sidebar-subitem <%= isJobWork4 ? 'active-sub' : '' %>">
+          <span>ข้อมูลปรับพินัย กจค.3</span>
+        </a>
+        <a href="/job/work5" class="sidebar-subitem <%= isJobWork5 ? 'active-sub' : '' %>">
+          <span>ข้อมูลปรับพินัย กจค.4</span>
+        </a>
+        <a href="/job/work6" class="sidebar-subitem <%= isJobWork6 ? 'active-sub' : '' %>">
+          <span>ข้อมูลปรับพินัย กบด.</span>
+        </a>
+        <a href="/job/work7" class="sidebar-subitem <%= isJobWork7 ? 'active-sub' : '' %>">
+          <span>ข้อมูลปรับพินัย กรท.</span>
+        </a>
+        <a href="/job/work8" class="sidebar-subitem <%= isJobWork8 ? 'active-sub' : '' %>">
+          <span>ข้อมูลปรับพินัย กจค.4</span>
+        </a>
+        <a href="/job/work9" class="sidebar-subitem <%= isJobWork9 ? 'active-sub' : '' %>">
+          <span>ข้อมูลปรับพินัย กบด.</span>
+        </a>
+        <a href="/job/work10" class="sidebar-subitem <%= isJobWork10 ? 'active-sub' : '' %>">
+          <span>ข้อมูลปรับพินัย กรท.</span>
+        </a>
+      </div>
+    </div>
   </div>
 
   <div class="footer-meta">

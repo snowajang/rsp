@@ -17,7 +17,8 @@ function getAccessToken(req) {
     return '';
 }
 
-router.post('/api/login/smc', async (req, res, next) => {
+router.post('/login/smc', async (req, res, next) => {
+    let response;
     try {
         const { pid, cid } = req.body;
         if (!pid || !cid) {
@@ -37,19 +38,21 @@ router.post('/api/login/smc', async (req, res, next) => {
                 chipNo : cid           
             })
         }
-        const response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/login/`, request);
+        response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/login/`, request);
         const data = await response.json();
         if (!response.ok) {
             return res.status(response.status).json({ errorNumber: data.errorNumber, errorMessage: data.errorMessage, data: null });
         } else {
             return res.status(response.status).json({ errorNumber: 0, errorMessage: null, data });
         }
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        console.log('Logout Error:', error);
+        return res.status(response?.status || 500).json({ errorNumber: 9999, errorMessage: "พบปัญหากรุณาติดต่อผู้ดูแลระบบ", data: null });
     }
 });
 
-router.post('/api/login/smc/auth', async (req, res, next) => {
+router.post('/login/smc/auth', async (req, res, next) => {
+    let response;
     try {
         const { xrandom, xenvelop } = req.body;
         if (!xrandom || !xenvelop) {
@@ -69,19 +72,21 @@ router.post('/api/login/smc/auth', async (req, res, next) => {
                 envelope : xenvelop
             })
         }
-        const response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/login/confirm`, request);
+        response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/login/confirm`, request);
         const data = await response.json();
         if (!response.ok) {
             return res.status(response.status).json({ errorNumber: data.errorNumber, errorMessage: data.errorMessage, data: null });
         } else {
             return res.status(response.status).json({ errorNumber: 0, errorMessage: null, data });
         }
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        console.log('Logout Error:', error);
+        return res.status(response?.status || 500).json({ errorNumber: 9999, errorMessage: "พบปัญหากรุณาติดต่อผู้ดูแลระบบ", data: null });
     }
 });
 
-router.post('/api/login/thaid/auth', async (req, res, next) => {
+router.post('/login/thaid/auth', async (req, res, next) => {
+    let response;
     try { 
         const { pid, name, accessToken } = req.body;
         if (!accessToken) {
@@ -102,19 +107,21 @@ router.post('/api/login/thaid/auth', async (req, res, next) => {
             })
         }
         console.log('Request Body:', request.body); // Log the request body for debugging
-        const response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/login/confirm`, request);
+        response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/login/confirm`, request);
         const data = await response.json();
         if (!response.ok) {
             return res.status(response.status).json({ errorNumber: data.errorNumber, errorMessage: data.errorMessage, data: null });
         } else {
             return res.status(response.status).json({ errorNumber: 0, errorMessage: null, data });
         }
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        console.log('Logout Error:', error);
+        return res.status(response?.status || 500).json({ errorNumber: 9999, errorMessage: "พบปัญหากรุณาติดต่อผู้ดูแลระบบ", data: null });
     }
 });
 
-router.post('/api/user', async (req, res, next) => {
+router.post('/user', async (req, res, next) => {
+    let response;
     try {
         const token = getAccessToken(req);
         if (!token) {
@@ -129,7 +136,7 @@ router.post('/api/user', async (req, res, next) => {
                 'Authorization': `Bearer ${token}`
             }
         }
-        const response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/user/job`, request);
+        response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/user/job`, request);
         const data = await response.json();
         if (!response.ok) {
             return res.status(response.status).json({ errorNumber: data.errorNumber, errorMessage: data.errorMessage, data: null });
@@ -137,11 +144,13 @@ router.post('/api/user', async (req, res, next) => {
             return res.status(response.status).json({ errorNumber: 0, errorMessage: null, data });
         }
     } catch (error) {
-        next(error);
+        console.log('Logout Error:', error);
+        return res.status(response?.status || 500).json({ errorNumber: 9999, errorMessage: "พบปัญหากรุณาติดต่อผู้ดูแลระบบ", data: null });
     }
 });
 
-router.post('/api/search', async (req, res, next) => {
+router.post('/search', async (req, res, next) => {    
+    let response;
     try {
         const token = getAccessToken(req);
         if (!token) {
@@ -157,7 +166,7 @@ router.post('/api/search', async (req, res, next) => {
             },
             body: JSON.stringify(req.body)
         }
-        const response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/request/`, request);
+        response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/request/`, request);
         const data = await response.json();
         if (!response.ok) {
             return res.status(response.status).json({ errorNumber: data.errorNumber, errorMessage: data.errorMessage, data: null });
@@ -165,11 +174,13 @@ router.post('/api/search', async (req, res, next) => {
             return res.status(response.status).json({ errorNumber: 0, errorMessage: null, data });
         }
     } catch (error) {
-        next(error);
+        console.log('Logout Error:', error);
+        return res.status(response?.status || 500).json({ errorNumber: 9999, errorMessage: "พบปัญหากรุณาติดต่อผู้ดูแลระบบ", data: null });
     }
 });
 
-router.post('/api/renew', async (req, res, next) => {
+router.post('/renew', async (req, res, next) => {
+    let response;
     try {
         const token = getAccessToken(req);
         if (!token) {
@@ -185,7 +196,7 @@ router.post('/api/renew', async (req, res, next) => {
             },
             body: JSON.stringify(req.body)
         }
-        const response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/login/renew`, request);
+        response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/login/renew`, request);
         const data = await response.json();
         if (!response.ok) {
             return res.status(response.status).json({ errorNumber: data.errorNumber, errorMessage: data.errorMessage, data: null });
@@ -193,11 +204,13 @@ router.post('/api/renew', async (req, res, next) => {
             return res.status(response.status).json({ errorNumber: 0, errorMessage: null, data });
         }
     } catch (error) {
-        next(error);
+        console.log('Logout Error:', error);
+        return res.status(response?.status || 500).json({ errorNumber: 9999, errorMessage: "พบปัญหากรุณาติดต่อผู้ดูแลระบบ", data: null });
     }
 });
 
-router.post('/api/logout', async (req, res, next) => {
+router.post('/logout', async (req, res, next) => {
+    let response;
     try {
         const token = getAccessToken(req);
         if (!token) {
@@ -213,15 +226,16 @@ router.post('/api/logout', async (req, res, next) => {
             },
             body: JSON.stringify(req.body)
         }
-        const response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/login/`, request);
-        const data = await response.json();
-        if (!response.ok) {
-            return res.status(response.status).json({ errorNumber: data.errorNumber, errorMessage: data.errorMessage, data: null });
-        } else {
+        response = await fetch(`${process.env.LINKAGE_API_BASE_URL}/api/center/login/`, request);
+        if (response.status === 204) {
+            let data = { success:true, message: 'Logout completed' };
             return res.status(response.status).json({ errorNumber: 0, errorMessage: null, data });
+        } else {
+            return res.status(response.status).json({ errorNumber: data.errorNumber, errorMessage: data.errorMessage, data: null });
         }
     } catch (error) {
-        next(error);
+        console.log('Logout Error:', error);
+        return res.status(response?.status || 500).json({ errorNumber: 9999, errorMessage: "พบปัญหากรุณาติดต่อผู้ดูแลระบบ", data: null });
     }
 });
 

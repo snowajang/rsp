@@ -1,0 +1,321 @@
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4 px-2">
+  <div>
+    <h3 class="mb-1">ThaiD App Management</h3>
+    <div class="text-muted">จัดการรายการแอป ThaID, Return URL และชุด scope สำหรับแต่ละ state ได้จากหน้าเดียว</div>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#createStateCard" aria-expanded="false">
+      <i class="bi bi-plus-circle-fill me-1"></i> เพิ่มแอป ThaID
+    </button>
+  </div>
+</div>
+
+<% if (flash && flash.message) { %>
+  <div class="alert alert-<%= flash.type || 'info' %> alert-dismissible fade show" role="alert">
+    <%= flash.message %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<div class="collapse mb-4" id="createStateCard">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <strong><i class="bi bi-shield-plus me-2 text-primary"></i>เพิ่มรายการแอป ThaID</strong>
+    </div>
+    <div class="card-body">
+      <form method="post" action="/state" class="row g-3">
+        <input type="hidden" name="page" value="1">
+        <input type="hidden" name="pageSize" value="<%= pagination.pageSize %>">
+        <input type="hidden" name="search" value="<%= filters.search || '' %>">
+        <input type="hidden" name="statusFilter" value="<%= filters.statusFilter || 'active' %>">
+
+        <div class="col-md-4">
+          <label class="form-label">State</label>
+          <input type="text" name="istate" class="form-control" placeholder="เช่น exat-login-state" required>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">Return URL</label>
+          <input type="url" name="returnurl" class="form-control" placeholder="https://example.go.th/thaid/callback" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">ผู้รับผิดชอบ</label>
+          <select name="userpid" class="form-select">
+            <option value="0">ผู้ดูแลระบบ</option>
+            <% owners.forEach((owner) => { %>
+              <option value="<%= owner.pid %>"><%= owner.label %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">สถานะ</label>
+          <select name="isActive" class="form-select">
+            <option value="true" selected>Active</option>
+            <option value="false">Suspended</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label d-block">Scope</label>
+          <div class="row g-2">
+            <% scopeFields.forEach((field) => { %>
+              <div class="col-md-4 col-lg-3">
+                <label class="form-check border rounded-3 p-3 h-100 bg-light-subtle">
+                  <input class="form-check-input me-2" type="checkbox" name="<%= field.key %>" value="1">
+                  <span class="small fw-medium"><%= field.label %></span>
+                </label>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+        <div class="col-12 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light border" data-bs-toggle="collapse" data-bs-target="#createStateCard">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">บันทึกรายการ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-white py-3">
+    <div class="row g-3 align-items-center">
+      <div class="col-lg-4">
+        <strong><i class="bi bi-phone me-2 text-primary"></i>รายการแอป ThaID</strong>
+        <div class="small text-muted mt-1">หน้า <%= pagination.page %>/<%= pagination.totalPages %> · ทั้งหมด <%= pagination.totalItems %> รายการ</div>
+      </div>
+      <div class="col-lg-8">
+        <form method="get" action="/state" class="row g-2 justify-content-lg-end">
+          <div class="col-md-4">
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+              <input type="text" name="search" value="<%= filters.search || '' %>" class="form-control" placeholder="ค้นหา state / return url / owner pid">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <select name="statusFilter" class="form-select" onchange="this.form.submit()">
+              <option value="active" <%= filters.statusFilter === 'active' ? 'selected' : '' %>>Active</option>
+              <option value="suspended" <%= filters.statusFilter === 'suspended' ? 'selected' : '' %>>Suspended</option>
+              <option value="deleted" <%= filters.statusFilter === 'deleted' ? 'selected' : '' %>>Deleted</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select name="pageSize" class="form-select" onchange="this.form.submit()">
+              <option value="10" <%= pagination.pageSize === 10 ? 'selected' : '' %>>10 / หน้า</option>
+              <option value="20" <%= pagination.pageSize === 20 ? 'selected' : '' %>>20 / หน้า</option>
+              <option value="30" <%= pagination.pageSize === 30 ? 'selected' : '' %>>30 / หน้า</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-outline-primary">ค้นหา</button>
+          </div>
+          <input type="hidden" name="page" value="1">
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 70px;">#</th>
+            <th>State / Return URL</th>
+            <th style="width: 170px;">Owner</th>
+            <th>Scope</th>
+            <th style="width: 140px;">สถานะ</th>
+            <th style="width: 180px;">Updated</th>
+            <th class="text-end" style="width: 280px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (apps && apps.length) { %>
+            <% apps.forEach((app, idx) => { %>
+              <% const displayIndex = ((pagination.page - 1) * pagination.pageSize) + (idx + 1); %>
+              <tr>
+                <td><%= displayIndex %></td>
+                <td>
+                  <div class="fw-semibold"><%= app.istate %></div>
+                  <div class="small text-muted text-break"><%= app.returnurl || '-' %></div>
+                </td>
+                <td>
+                  <div class="small"><%= app.ownerLabel %></div>
+                  <div class="small text-muted">PID: <%= app.userpid?.toString?.() || '0' %></div>
+                </td>
+                <td>
+                  <% if (app.selectedScopes.length) { %>
+                    <div class="d-flex flex-wrap gap-1">
+                      <% app.selectedScopes.forEach((scope) => { %>
+                        <span class="badge rounded-pill text-bg-light border"><%= scope %></span>
+                      <% }) %>
+                    </div>
+                  <% } else { %>
+                    <span class="text-muted small">ไม่ระบุ scope</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (app.isDeleted) { %>
+                    <span class="badge text-bg-danger">Deleted</span>
+                  <% } else if (app.isActive) { %>
+                    <span class="badge text-bg-success">Active</span>
+                  <% } else { %>
+                    <span class="badge text-bg-warning">Suspended</span>
+                  <% } %>
+                </td>
+                <td class="small text-muted"><%= app.updatedAt ? new Date(app.updatedAt).toLocaleString('th-TH') : '-' %></td>
+                <td class="text-end">
+                  <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary btn-edit-state"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editStateModal"
+                      data-istate="<%= app.istate %>"
+                      data-returnurl="<%= app.returnurl || '' %>"
+                      data-userpid="<%= app.userpid?.toString?.() || '0' %>"
+                      data-active="<%= app.isActive ? 'true' : 'false' %>"
+                      data-scopes="<%= encodeURIComponent(JSON.stringify(app.selectedScopes)) %>"
+                      <%= app.isDeleted ? 'disabled' : '' %>>
+                      <i class="bi bi-pencil-square"></i> Edit
+                    </button>
+
+                    <% if (!app.isDeleted) { %>
+                      <form method="post" action="/state/<%= encodeURIComponent(app.istate) %>/toggle-status" class="d-inline">
+                        <input type="hidden" name="page" value="<%= pagination.page %>">
+                        <input type="hidden" name="pageSize" value="<%= pagination.pageSize %>">
+                        <input type="hidden" name="search" value="<%= filters.search || '' %>">
+                        <input type="hidden" name="statusFilter" value="<%= filters.statusFilter %>">
+                        <button type="submit" class="btn btn-sm <%= app.isActive ? 'btn-outline-warning' : 'btn-outline-success' %>">
+                          <i class="bi <%= app.isActive ? 'bi-pause-circle' : 'bi-check-circle' %>"></i>
+                          <%= app.isActive ? 'Suspend' : 'Activate' %>
+                        </button>
+                      </form>
+
+                      <form method="post" action="/state/<%= encodeURIComponent(app.istate) %>/delete" class="d-inline" onsubmit="return confirm('ยืนยันการลบรายการนี้?');">
+                        <input type="hidden" name="page" value="<%= pagination.page %>">
+                        <input type="hidden" name="pageSize" value="<%= pagination.pageSize %>">
+                        <input type="hidden" name="search" value="<%= filters.search || '' %>">
+                        <input type="hidden" name="statusFilter" value="<%= filters.statusFilter %>">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                      </form>
+                    <% } else { %>
+                      <form method="post" action="/state/<%= encodeURIComponent(app.istate) %>/restore" class="d-inline">
+                        <input type="hidden" name="page" value="<%= pagination.page %>">
+                        <input type="hidden" name="pageSize" value="<%= pagination.pageSize %>">
+                        <input type="hidden" name="search" value="<%= filters.search || '' %>">
+                        <input type="hidden" name="statusFilter" value="<%= filters.statusFilter %>">
+                        <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-arrow-counterclockwise"></i> Restore</button>
+                      </form>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="7" class="text-center py-5 text-muted">ไม่พบข้อมูลแอป ThaID</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-footer bg-white d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+    <div class="small text-muted">รองรับรายการหลัก: list / add / edit / suspend / delete / restore</div>
+    <div class="btn-group">
+      <a class="btn btn-sm btn-outline-secondary <%= pagination.hasPrev ? '' : 'disabled' %>" href="/state?page=<%= pagination.page - 1 %>&pageSize=<%= pagination.pageSize %>&search=<%= encodeURIComponent(filters.search || '') %>&statusFilter=<%= filters.statusFilter %>">ก่อนหน้า</a>
+      <a class="btn btn-sm btn-outline-secondary <%= pagination.hasNext ? '' : 'disabled' %>" href="/state?page=<%= pagination.page + 1 %>&pageSize=<%= pagination.pageSize %>&search=<%= encodeURIComponent(filters.search || '') %>&statusFilter=<%= filters.statusFilter %>">ถัดไป</a>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editStateModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pencil-square me-2 text-primary"></i>แก้ไขรายการแอป ThaID</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" id="editStateForm">
+        <div class="modal-body">
+          <input type="hidden" name="page" value="<%= pagination.page %>">
+          <input type="hidden" name="pageSize" value="<%= pagination.pageSize %>">
+          <input type="hidden" name="search" value="<%= filters.search || '' %>">
+          <input type="hidden" name="statusFilter" value="<%= filters.statusFilter %>">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">State</label>
+              <input type="text" id="editStateKey" name="istate" class="form-control" required>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label">Return URL</label>
+              <input type="url" id="editReturnUrl" name="returnurl" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">ผู้รับผิดชอบ</label>
+              <select id="editOwnerPid" name="userpid" class="form-select">
+                <option value="0">ผู้ดูแลระบบ</option>
+                <% owners.forEach((owner) => { %>
+                  <option value="<%= owner.pid %>"><%= owner.label %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">สถานะ</label>
+              <select id="editIsActive" name="isActive" class="form-select">
+                <option value="true">Active</option>
+                <option value="false">Suspended</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label d-block">Scope</label>
+              <div class="row g-2">
+                <% scopeFields.forEach((field) => { %>
+                  <div class="col-md-4 col-lg-3">
+                    <label class="form-check border rounded-3 p-3 h-100 bg-light-subtle">
+                      <input class="form-check-input me-2 edit-scope" type="checkbox" name="<%= field.key %>" value="1" data-scope-key="<%= field.key %>">
+                      <span class="small fw-medium"><%= field.label %></span>
+                    </label>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light border" data-bs-dismiss="modal">ปิด</button>
+          <button type="submit" class="btn btn-primary">บันทึกการเปลี่ยนแปลง</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.btn-edit-state').forEach((button) => {
+    button.addEventListener('click', () => {
+      const stateKey = button.getAttribute('data-istate') || '';
+      const returnUrl = button.getAttribute('data-returnurl') || '';
+      const userPid = button.getAttribute('data-userpid') || '0';
+      const isActive = button.getAttribute('data-active') || 'true';
+      const scopesRaw = button.getAttribute('data-scopes') || '[]';
+
+      document.getElementById('editStateForm').action = `/state/${encodeURIComponent(stateKey)}/update`;
+      document.getElementById('editStateKey').value = stateKey;
+      document.getElementById('editReturnUrl').value = returnUrl;
+      document.getElementById('editOwnerPid').value = userPid;
+      document.getElementById('editIsActive').value = isActive;
+
+      let selectedScopes = [];
+      try {
+        selectedScopes = JSON.parse(decodeURIComponent(scopesRaw));
+      } catch (err) {
+        selectedScopes = [];
+      }
+
+      document.querySelectorAll('.edit-scope').forEach((checkbox) => {
+        checkbox.checked = selectedScopes.includes(checkbox.getAttribute('data-scope-key'));
+      });
+    });
+  });
+</script>

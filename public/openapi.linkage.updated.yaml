@@ -2,33 +2,33 @@ openapi: 3.0.3
 info:
   title: Linkage Center API
   version: 1.1.0
-  description: |
-    เอกสาร API สำหรับระบบ Linkage Center และบริการตรวจสอบบัตร/สถานะประชาชน
-    โดย Swagger UI ถูกตั้งค่าให้ใช้งานกับ Express 5 และไฟล์ openapi.yaml โดยตรง
+  description: 'เอกสาร API สำหรับระบบ Linkage Center และบริการตรวจสอบบัตร/สถานะประชาชน
 
-    การยืนยันตัวตนของกลุ่ม Linkage รองรับ 2 รูปแบบ
-    1. Authorization: Bearer <token>
-    2. header ชื่อ token: <token>
+
+    การยืนยันตัวตนของกลุ่ม Linkage รองรับ  Authorization: Bearer <token>
+
 
     เพื่อความสะดวกในการทดสอบผ่าน Swagger UI แนะนำให้ใช้ BearerAuth เป็นหลัก
+
+    '
 servers:
-  - url: /
-    description: Current server
+- url: /
+  description: Current server
 tags:
-  - name: Linkage Login
-    description: ขั้นตอนรับ token และยืนยันตัวตนกับ Linkage Center
-  - name: Linkage User
-    description: ตรวจสอบข้อมูลผู้ใช้งานหลัง login
-  - name: Linkage Request
-    description: ส่งคำขอข้อมูลไปยัง Linkage Center
-  - name: Linkage Session
-    description: ต่ออายุและยกเลิก session ของ Linkage
-  - name: CheckPop
-    description: ตรวจสอบสถานะบุคคล/บัตรจาก SOAP service
-  - name: CheckLaser
-    description: ตรวจสอบบัตรด้วยเลข Laser
-  - name: CheckChip
-    description: ตรวจสอบบัตรด้วย ChipNo และ bp1no
+- name: Linkage Login
+  description: ขั้นตอนรับ token และยืนยันตัวตนกับ Linkage Center
+- name: Linkage User
+  description: ตรวจสอบข้อมูลผู้ใช้งานหลัง login
+- name: Linkage Request
+  description: ส่งคำขอ ข้อมูล ไปยัง Linkage Center
+- name: Linkage Session
+  description: ต่ออายุและยกเลิก session ของ Linkage
+- name: CheckPop
+  description: ตรวจสอบสถานะบุคคล/บัตรจาก DOPA Service
+- name: CheckLaser
+  description: ตรวจสอบบัตรด้วยเลข Laser จาก DOPA Service
+- name: CheckChip
+  description: ตรวจสอบบัตรด้วย ChipNo และ bp1no จาก DOPA Service
 components:
   securitySchemes:
     BearerAuth:
@@ -36,11 +36,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: ใช้กับ endpoint กลุ่ม Linkage ที่ต้องมี token หลัง login
-    TokenHeader:
-      type: apiKey
-      in: header
-      name: token
-      description: รูปแบบเดิมของระบบ รองรับควบคู่กับ BearerAuth
   headers:
     XRequestId:
       description: Correlation ID สำหรับ trace คำขอแต่ละรายการ
@@ -50,14 +45,18 @@ components:
   schemas:
     ErrorResponse:
       type: object
-      required: [error]
+      required:
+      - error
       properties:
         error:
           type: string
           example: body not variable is required
     ErrorEnvelope:
       type: object
-      required: [errorNumber, errorMessage, data]
+      required:
+      - errorNumber
+      - errorMessage
+      - data
       properties:
         errorNumber:
           type: integer
@@ -69,11 +68,14 @@ components:
         data:
           nullable: true
           oneOf:
-            - type: object
-            - type: 'null'
+          - type: object
+          - type: 'null'
     StandardApiEnvelope:
       type: object
-      required: [errorNumber, errorMessage, data]
+      required:
+      - errorNumber
+      - errorMessage
+      - data
       properties:
         errorNumber:
           type: integer
@@ -85,20 +87,22 @@ components:
         data:
           description: ข้อมูลที่ส่งกลับจากบริการต้นทาง
           oneOf:
-            - type: object
-            - type: array
-              items: {}
-            - type: string
-            - type: integer
-            - type: boolean
-            - type: 'null'
+          - type: object
+          - type: array
+            items: {}
+          - type: string
+          - type: integer
+          - type: boolean
+          - type: 'null'
     LinkageLoginSmcRequest:
       type: object
-      required: [pid, cid]
+      required:
+      - pid
+      - cid
       properties:
         pid:
           type: string
-          pattern: '^\d{13}$'
+          pattern: ^\d{13}$
           description: เลขประจำตัวประชาชน 13 หลัก
           example: '1234567890123'
         cid:
@@ -108,32 +112,50 @@ components:
     LinkageLoginSmcResponseData:
       type: object
       properties:
-        token:
+        errorNumber:
+          type: integer
+          example: 401
+        errorMessage:
           type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo
-        loginType:
-          type: integer
-          example: 1
-        officeID:
-          type: integer
-          example: 1001
-        personalID:
-          type: string
-          example: '1234567890123'
-        expiresIn:
-          type: integer
-          example: 900
+          nullable: true
+          example: Unauthorized
+        data:
+          type: object
+          properties:            
+            random:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9vdemo
+            office:
+              type: array
+              items:
+                id:
+                  type: integer
+                  example: 1001
+                name:
+                  type: string
+                  example: หน่วยงาน
       additionalProperties: true
     LinkageLoginSmcEnvelope:
-      allOf:
-        - $ref: '#/components/schemas/StandardApiEnvelope'
-        - type: object
-          properties:
-            data:
-              $ref: '#/components/schemas/LinkageLoginSmcResponseData'
+      type: object
+      properties:
+        errorNumber:
+          type: integer
+          example: 401
+        errorMessage:
+          type: string
+          nullable: true
+          example: Unauthorized
+        data:
+          type: object
+          properties:            
+            token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyUGVyc29uYWxJRCI6NDQ0NDQ0NDQ0NDQ0MywidXNlck9mZmljZUlEIjoxMDAwMDAsInByb3h5T2ZmaWNlSUQiOjIwMDAwMCwibG9naW5UeXBlIjoxLCJleHAiOjIyMDAwMDAwMDB9.8c3c6ocJ62p709sgBGs355l-t2Nh9kGOBDP9TPFuPs8
     LinkageLoginSmcAuthRequest:
       type: object
-      required: [xrandom, xenvelop]
+      required:
+      - xrandom
+      - xenvelop
       properties:
         xrandom:
           type: string
@@ -145,11 +167,12 @@ components:
           example: U0lHTkFUVVJFX0ZST01fQ0FSRA==
     LinkageLoginThaiDRequest:
       type: object
-      required: [accessToken]
+      required:
+      - accessToken
       properties:
         pid:
           type: string
-          pattern: '^\d{13}$'
+          pattern: ^\d{13}$
           description: เลขประจำตัวประชาชน (ถ้ามี)
           example: '1234567890123'
         name:
@@ -182,28 +205,44 @@ components:
           type: array
           items:
             type: string
-          example: [viewer, operator]
+          example:
+          - viewer
+          - operator
       additionalProperties: true
     LinkageUserEnvelope:
       allOf:
-        - $ref: '#/components/schemas/StandardApiEnvelope'
-        - type: object
-          properties:
-            data:
-              $ref: '#/components/schemas/LinkageUserResponseData'
+      - $ref: '#/components/schemas/StandardApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/LinkageUserResponseData'
     LinkageSearchRequest:
       type: object
       description: Payload สำหรับส่งต่อไปยัง /api/center/request/ โดยตรง
-      required: [serviceName, requestBody]
+      required:
+      - serviceName
+      - requestBody
       properties:
-        serviceName:
+        jobID:
           type: string
           description: รหัสหรือชื่อบริการที่ต้องการเรียกจาก Linkage Center
-          example: personal-info
-        requestBody:
-          type: object
+          example: eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee
+        data:
+          type: array
+          items:
+            serviceID:
+              type: integer
+              example: 2
+              description: รหัส Service ที่ต้องการเรียกจาก Linkage Center
+            query:
+              type: object
+              peroperties:
+                personalId:
+                  type: string
+                  pattern: ^\d{13}$
+                  description: เลขประจำตัวประชาชน 13 หลัก
+                  example: '1234567890123'
           description: ข้อมูลคำขอตาม service ที่เลือก
-          additionalProperties: true
           example:
             personalId: '1234567890123'
             requestChannel: web
@@ -214,18 +253,18 @@ components:
       additionalProperties: true
     LinkageSearchEnvelope:
       allOf:
-        - $ref: '#/components/schemas/StandardApiEnvelope'
-        - type: object
-          properties:
-            data:
-              type: object
-              additionalProperties: true
-              example:
-                transactionId: TXN-20260307-0001
-                resultCount: 1
-                items:
-                  - personalId: '1234567890123'
-                    fullName: สมชาย ใจดี
+      - $ref: '#/components/schemas/StandardApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            additionalProperties: true
+            example:
+              transactionId: TXN-20260307-0001
+              resultCount: 1
+              items:
+              - personalId: '1234567890123'
+                fullName: สมชาย ใจดี
     LinkageRenewRequest:
       type: object
       description: ข้อมูลเพิ่มเติมกรณี backend ต้องการระบุ context ของการ renew
@@ -235,20 +274,21 @@ components:
           example: keep-session-alive
       additionalProperties: true
     LinkageRenewEnvelope:
-      allOf:
-        - $ref: '#/components/schemas/StandardApiEnvelope'
-        - type: object
+      type: object
+      properties:
+        errorNumber:
+          type: integer
+          example: 401
+        errorMessage:
+          type: string
+          nullable: true
+          example: Unauthorized
+        data:
+          type: object
           properties:
-            data:
-              type: object
-              properties:
-                token:
-                  type: string
-                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.renewed
-                expiresIn:
-                  type: integer
-                  example: 900
-              additionalProperties: true
+            token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.renewed
     LinkageLogoutRequest:
       type: object
       description: Payload เพิ่มเติม (ถ้ามี)
@@ -259,25 +299,27 @@ components:
       additionalProperties: true
     LinkageLogoutEnvelope:
       allOf:
-        - $ref: '#/components/schemas/StandardApiEnvelope'
-        - type: object
-          properties:
-            data:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                message:
-                  type: string
-                  example: logout completed
+      - $ref: '#/components/schemas/StandardApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message:
+                type: string
+                example: logout completed
     CheckDeathRequest:
       type: object
-      required: [targetId, dob]
+      required:
+      - targetId
+      - dob
       properties:
         targetId:
           type: string
-          pattern: '^\d{13}$'
+          pattern: ^\d{13}$
           description: เลขประจำตัวประชาชน 13 หลัก
           example: '1234567890123'
         dob:
@@ -302,18 +344,23 @@ components:
           example: ''
     CheckDeathEnvelope:
       allOf:
-        - $ref: '#/components/schemas/StandardApiEnvelope'
-        - type: object
-          properties:
-            data:
-              $ref: '#/components/schemas/CheckDeathResponseData'
+      - $ref: '#/components/schemas/StandardApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/CheckDeathResponseData'
     CheckLaserRequest:
       type: object
-      required: [pid, fname, lname, dob, laser]
+      required:
+      - pid
+      - fname
+      - lname
+      - dob
+      - laser
       properties:
         pid:
           type: string
-          pattern: '^\d{13}$'
+          pattern: ^\d{13}$
           description: เลขประจำตัวประชาชน 13 หลัก
           example: '1234567890123'
         fname:
@@ -349,11 +396,14 @@ components:
           example: ตรวจสอบข้อมูลสำเร็จ
     CheckChipRequest:
       type: object
-      required: [pid, chipno, bp1no]
+      required:
+      - pid
+      - chipno
+      - bp1no
       properties:
         pid:
           type: string
-          pattern: '^\d{13}$'
+          pattern: ^\d{13}$
           description: เลขประจำตัวประชาชน 13 หลัก
           example: '1234567890123'
         chipno:
@@ -379,6 +429,64 @@ components:
         desc:
           type: string
           example: ตรวจสอบข้อมูลสำเร็จ
+    LinkageErrorResponse:
+      type: object
+      required:
+      - errorNumber
+      - errorMessage
+      properties:
+        errorNumber:
+          type: integer
+          example: 9999
+        errorMessage:
+          type: string
+          example: '[9999] ข้อความอธิบายปัญหา'
+    ResponseFromService2:
+      type: object
+      properties:
+        errorNumber:
+          type: integer
+          example: 401
+        errorMessage:
+          type: string
+          nullable: true
+          example: Unauthorized
+        data:
+          nullable: true
+          oneOf:
+          - type: object
+          - type: 'null'
+          type: array
+          items:
+            type: object
+            properties:            
+              serviceID:
+                type: integer
+                example: 1
+                description: รหัส Service
+              responseStatus:
+                type: integer
+                example: 200
+                description: สถานะตอบกลับ HTTP Status ของ Service
+              responseContentType:
+                type: string
+                example: application/json; charset=utf-8
+                description: Response Content-Type ของ Service
+              responseData:
+                type: object
+                description: ข้อมูลที่ตอบกลับจาก Service
+                additionalProperties: true
+                example:
+                  example: example response data from service2
+              responseError:
+                oneOf:
+                - type: string
+                - type: 'null'
+                example: null
+              responseTimeMs:
+                type: integer
+                example: 800
+                description: เวลาที่ใช้ในการตอบกลับ (หน่วย Milliseconds)
   responses:
     BadRequestError:
       description: คำขอไม่ถูกต้องหรือข้อมูลไม่ครบ
@@ -386,20 +494,87 @@ components:
         application/json:
           schema:
             oneOf:
-              - $ref: '#/components/schemas/ErrorResponse'
-              - $ref: '#/components/schemas/ErrorEnvelope'
+            - $ref: '#/components/schemas/ErrorResponse'
+            - $ref: '#/components/schemas/ErrorEnvelope'
     InternalServerError:
       description: เกิดข้อผิดพลาดภายในระบบ
       content:
         application/json:
           schema:
             oneOf:
-              - $ref: '#/components/schemas/ErrorResponse'
-              - $ref: '#/components/schemas/ErrorEnvelope'
+            - $ref: '#/components/schemas/ErrorResponse'
+            - $ref: '#/components/schemas/ErrorEnvelope'
+    LinkageBadRequest:
+      description: คำขอไม่ถูกต้อง
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LinkageErrorResponse'
+          examples:
+            default:
+              value:
+                errorNumber: 9999
+                errorMessage: '[9999] ข้อความอธิบายปัญหา'
+    LinkageUnauthorized:
+      description: ไม่ได้รับอนุญาตให้เข้าถึง
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LinkageErrorResponse'
+          examples:
+            default:
+              value:
+                errorNumber: 9999
+                errorMessage: '[9999] ข้อความอธิบายปัญหา'
+    LinkageForbidden:
+      description: ไม่มีสิทธิ์เข้าถึงทรัพยากรนี้
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LinkageErrorResponse'
+          examples:
+            default:
+              value:
+                errorNumber: 9999
+                errorMessage: '[9999] ข้อความอธิบายปัญหา'
+    LinkageNotFound:
+      description: ไม่พบทรัพยากรที่ร้องขอ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LinkageErrorResponse'
+          examples:
+            default:
+              value:
+                errorNumber: 9999
+                errorMessage: '[9999] ข้อความอธิบายปัญหา'
+    LinkageTimeout:
+      description: การเชื่อมต่อใช้เวลานานเกินกำหนด
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LinkageErrorResponse'
+          examples:
+            default:
+              value:
+                errorNumber: 9999
+                errorMessage: '[9999] ข้อความอธิบายปัญหา'
+    LinkageInternalServerError:
+      description: เกิดข้อผิดพลาดภายในระบบ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LinkageErrorResponse'
+          examples:
+            default:
+              value:
+                errorNumber: 9999
+                errorMessage: '[9999] ข้อความอธิบายปัญหา'
 paths:
   /api/linkage/login/smc:
     post:
-      tags: [Linkage Login]
+      tags:
+      - Linkage Login
       summary: Login ด้วยบัตร Smart Card (SMC)
       description: ใช้เลขประจำตัวประชาชนและ Chip ID เพื่อขอ token เริ่มต้นจาก Linkage Center
       requestBody:
@@ -416,9 +591,6 @@ paths:
       responses:
         '200':
           description: Login สำเร็จ
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/XRequestId'
           content:
             application/json:
               schema:
@@ -429,18 +601,33 @@ paths:
                     errorNumber: 0
                     errorMessage: null
                     data:
-                      token: demo-linkage-token
-                      loginType: 1
-                      officeID: 1001
-                      personalID: '1234567890123'
-                      expiresIn: 900
+                      random: demo-random-token
+                      office: [
+                        {
+                          id: 1001,
+                          name: หน่วยงาน
+                        },
+                        {
+                          id: 1002,
+                          name: หน่วยงาน2
+                        }
+                      ]
         '400':
-          $ref: '#/components/responses/BadRequestError'
+          $ref: '#/components/responses/LinkageBadRequest'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/LinkageInternalServerError'
+        '401':
+          $ref: '#/components/responses/LinkageUnauthorized'
+        '403':
+          $ref: '#/components/responses/LinkageForbidden'
+        '404':
+          $ref: '#/components/responses/LinkageNotFound'
+        '408':
+          $ref: '#/components/responses/LinkageTimeout'
   /api/linkage/login/smc/auth:
     post:
-      tags: [Linkage Login]
+      tags:
+      - Linkage Login
       summary: ยืนยันตัวตน SMC ด้วย random/envelope
       description: ใช้ข้อมูลจากการลงนามของบัตร Smart Card เพื่อยืนยันการ login
       requestBody:
@@ -467,16 +654,23 @@ paths:
                     errorNumber: 0
                     errorMessage: null
                     data:
-                      token: demo-confirmed-token
-                      loginType: 1
-                      expiresIn: 900
+                      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyUGVyc29uYWxJRCI6NDQ0NDQ0NDQ0NDQ0MywidXNlck9mZmljZUlEIjoxMDAwMDAsInByb3h5T2ZmaWNlSUQiOjIwMDAwMCwibG9naW5UeXBlIjoxLCJleHAiOjIyMDAwMDAwMDB9.8c3c6ocJ62p709sgBGs355l-t2Nh9kGOBDP9TPFuPs8
         '400':
-          $ref: '#/components/responses/BadRequestError'
+          $ref: '#/components/responses/LinkageBadRequest'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/LinkageInternalServerError'
+        '401':
+          $ref: '#/components/responses/LinkageUnauthorized'
+        '403':
+          $ref: '#/components/responses/LinkageForbidden'
+        '404':
+          $ref: '#/components/responses/LinkageNotFound'
+        '408':
+          $ref: '#/components/responses/LinkageTimeout'
   /api/linkage/login/thaid/auth:
     post:
-      tags: [Linkage Login]
+      tags:
+      - Linkage Login
       summary: Login ด้วย ThaiD
       description: ใช้ access token จาก ThaiD เพื่อยืนยันตัวตนกับ Linkage Center
       requestBody:
@@ -499,17 +693,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/LinkageLoginSmcEnvelope'
         '400':
-          $ref: '#/components/responses/BadRequestError'
+          $ref: '#/components/responses/LinkageBadRequest'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/LinkageInternalServerError'
+        '401':
+          $ref: '#/components/responses/LinkageUnauthorized'
+        '403':
+          $ref: '#/components/responses/LinkageForbidden'
+        '404':
+          $ref: '#/components/responses/LinkageNotFound'
+        '408':
+          $ref: '#/components/responses/LinkageTimeout'
   /api/linkage/user:
     post:
-      tags: [Linkage User]
+      tags:
+      - Linkage User
       summary: ดึงข้อมูลสิทธิ์/หน้าที่การงานของผู้ใช้
       description: ตรวจสอบข้อมูลผู้ใช้งานจาก token หลัง login
       security:
-        - BearerAuth: []
-        - TokenHeader: []
+      - BearerAuth: []
+      - TokenHeader: []
       responses:
         '200':
           description: ดึงข้อมูลผู้ใช้สำเร็จ
@@ -523,24 +726,28 @@ paths:
                     errorNumber: 0
                     errorMessage: null
                     data:
-                      personalID: '1234567890123'
-                      fullName: สมชาย ใจดี
-                      officeID: 1001
-                      officeName: สำนักทะเบียนอำเภอตัวอย่าง
-                      positionName: เจ้าพนักงานปกครอง
-                      roles: [viewer, operator]
+                      job: ["ffffffff-ffff-4fff-bfff-ffffffffffff","eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee"]
         '400':
-          $ref: '#/components/responses/BadRequestError'
+          $ref: '#/components/responses/LinkageBadRequest'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/LinkageInternalServerError'
+        '401':
+          $ref: '#/components/responses/LinkageUnauthorized'
+        '403':
+          $ref: '#/components/responses/LinkageForbidden'
+        '404':
+          $ref: '#/components/responses/LinkageNotFound'
+        '408':
+          $ref: '#/components/responses/LinkageTimeout'
   /api/linkage/search:
     post:
-      tags: [Linkage Request]
+      tags:
+      - Linkage Request
       summary: ค้นหาข้อมูลโดยส่งคำขอไปยัง Linkage Center
       description: ส่ง body ไปยังบริการต้นทางโดยตรงพร้อม token ที่ออกจากระบบ login
       security:
-        - BearerAuth: []
-        - TokenHeader: []
+      - BearerAuth: []
+      - TokenHeader: []
       requestBody:
         required: true
         content:
@@ -550,40 +757,42 @@ paths:
             examples:
               search-person:
                 value:
-                  serviceName: personal-info
-                  requestRef: LC-REQ-20260307-001
-                  requestBody:
-                    personalId: '1234567890123'
-                    requestChannel: web
+                  jobID: eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee
+                  data: [
+                    {
+                      serviceID: 1,
+                      query: {
+                        personalId: '1234567890123'
+                      }
+                    }]
       responses:
         '200':
           description: ค้นหาสำเร็จ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LinkageSearchEnvelope'
+                $ref: '#/components/schemas/ResponseFromService2'
         '400':
-          $ref: '#/components/responses/BadRequestError'
+          $ref: '#/components/responses/LinkageBadRequest'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/LinkageInternalServerError'
+        '401':
+          $ref: '#/components/responses/LinkageUnauthorized'
+        '403':
+          $ref: '#/components/responses/LinkageForbidden'
+        '404':
+          $ref: '#/components/responses/LinkageNotFound'
+        '408':
+          $ref: '#/components/responses/LinkageTimeout'
   /api/linkage/renew:
     post:
-      tags: [Linkage Session]
+      tags:
+      - Linkage Session
       summary: ต่ออายุ token ของ Linkage
       description: ใช้ token ที่ยังไม่หมดอายุเพื่อขอ token หรือ session ใหม่
       security:
-        - BearerAuth: []
-        - TokenHeader: []
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LinkageRenewRequest'
-            examples:
-              default:
-                value:
-                  reason: keep-session-alive
+      - BearerAuth: []
+      - TokenHeader: []
       responses:
         '200':
           description: ต่ออายุสำเร็จ
@@ -592,27 +801,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/LinkageRenewEnvelope'
         '400':
-          $ref: '#/components/responses/BadRequestError'
+          $ref: '#/components/responses/LinkageBadRequest'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/LinkageInternalServerError'
+        '401':
+          $ref: '#/components/responses/LinkageUnauthorized'
+        '403':
+          $ref: '#/components/responses/LinkageForbidden'
+        '404':
+          $ref: '#/components/responses/LinkageNotFound'
+        '408':
+          $ref: '#/components/responses/LinkageTimeout'
   /api/linkage/logout:
     post:
-      tags: [Linkage Session]
+      tags:
+      - Linkage Session
       summary: Logout ออกจาก Linkage Center
       description: ยกเลิก session ปัจจุบันด้วย token ที่ใช้งานอยู่
       security:
-        - BearerAuth: []
-        - TokenHeader: []
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LinkageLogoutRequest'
-            examples:
-              default:
-                value:
-                  reason: user-request
+      - BearerAuth: []
+      - TokenHeader: []
       responses:
         '200':
           description: Logout สำเร็จ
@@ -621,12 +829,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/LinkageLogoutEnvelope'
         '400':
-          $ref: '#/components/responses/BadRequestError'
+          $ref: '#/components/responses/LinkageBadRequest'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/LinkageInternalServerError'
+        '401':
+          $ref: '#/components/responses/LinkageUnauthorized'
+        '403':
+          $ref: '#/components/responses/LinkageForbidden'
+        '404':
+          $ref: '#/components/responses/LinkageNotFound'
+        '408':
+          $ref: '#/components/responses/LinkageTimeout'
   /api/card/death:
     post:
-      tags: [CheckPop]
+      tags:
+      - CheckPop
       summary: ตรวจสอบสถานะบุคคล/บัตร (CheckDeathStatus)
       description: เรียก SOAP service เพื่อตรวจสอบสถานะจากเลขประชาชนและวันเกิด
       requestBody:
@@ -650,20 +867,18 @@ paths:
               examples:
                 success:
                   value:
-                    errorNumber: 0
-                    errorMessage: null
-                    data:
-                      stCode: '0'
-                      stDesc: พบข้อมูลบุคคล
-                      isError: false
-                      isErrorMessage: ''
+                    stCode: '0'
+                    stDesc: พบข้อมูลบุคคล
+                    isError: false
+                    isErrorMessage: ''
         '400':
           $ref: '#/components/responses/BadRequestError'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /api/card/checklaser:
     post:
-      tags: [CheckLaser]
+      tags:
+      - CheckLaser
       summary: ตรวจสอบบัตรด้วยเลข Laser (CheckCardByLaser)
       description: ตรวจสอบข้อมูลบัตรจาก pid ชื่อ นามสกุล วันเกิด และเลข Laser
       requestBody:
@@ -700,7 +915,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
   /api/card/checkchip:
     post:
-      tags: [CheckChip]
+      tags:
+      - CheckChip
       summary: ตรวจสอบบัตรด้วย ChipNo (CheckCardByCID)
       description: ตรวจสอบข้อมูลบัตรจาก pid, chipno และ bp1no ผ่าน SOAP service
       requestBody:

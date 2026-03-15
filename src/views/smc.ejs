@@ -1,99 +1,97 @@
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="mb-0">Smart Card</h4>
-</div>
-
-<div class="alert alert-info">
-  ข้อมูลบัตรประจำตัวประชาชน
-</div>
-
-<div class="card shadow-sm border-0">
-  <div class="card-header bg-white d-flex justify-content-between align-items-center">
-    <strong>ข้อมูลบัตรประจำตัวประชาชน</strong>
-    <button class="btn btn-sm btn-primary" type="button" onclick="smcreaderlist()">ตรวจสอบ Agent</button>
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4 px-2">
+  <div class="alert alert-info">
+    ข้อมูลบัตรประจำตัวประชาชน
   </div>
 
-  <div class="card-body">
-    <div id="runsmc" class="mb-3"></div>
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <strong>ข้อมูลบัตรประจำตัวประชาชน</strong>
+      <button class="btn btn-sm btn-primary" type="button" onclick="smcreaderlist()">ตรวจสอบ Agent</button>
+    </div>
 
-    <form method="post">
-      <div class="row g-3">
-        <div class="col-lg-9">
-          <table class="table table-hover">
-            <tbody>
-              <tr>
-                <td>เลขประจำตัวประชาชน</td>
-                <td>:</td>
-                <td width="250">
-                  <span id="pid" class="text-primary pid"><%= smc?.pid || '-' %></span>
-                  <input id="xpid" name="pid" type="hidden" value="<%= smc?.pid || '' %>" />
-                </td>
-              </tr>
-              <tr>
-                <td>ชื่อ (TH)</td>
-                <td>:</td>
-                <td>
-                  <span id="nameTh" class="text-primary"><%= smc?.nameTh || '-' %></span>
-                  <input id="xnameTh" name="nameTh" type="hidden" value="<%= smc?.nameTh || '' %>" />
-                </td>
-              </tr>
-              <tr>
-                <td>ชื่อ (EN)</td>
-                <td>:</td>
-                <td>
-                  <span id="nameEn" class="text-primary"><%= smc?.nameEn || '-' %></span>
-                  <input id="xnameEn" name="nameEn" type="hidden" value="<%= smc?.nameEn || '' %>" />
-                </td>
-              </tr>
-              <tr>
-                <td>วันเกิด</td>
-                <td>:</td>
-                <td>
-                  <span id="birthDate" class="text-primary"><%= smc?.birthDate || '-' %></span>
-                  <input id="xbirthDate" name="birthDate" type="hidden" value="<%= smc?.birthDate || '' %>" />
-                </td>
-              </tr>
-              <tr>
-                <td>ที่อยู่</td>
-                <td>:</td>
-                <td>
-                  <span id="address" class="text-primary"><%= smc?.address || '-' %></span>
-                  <input id="xaddress" name="address" type="hidden" value="<%= smc?.address || '' %>" />
-                </td>
-              </tr>
-              <tr>
-                <td>วันที่ออกบัตร</td>
-                <td>:</td>
-                <td>
-                  <span id="issueDate" class="text-primary"><%= smc?.issueDate || '-' %></span>
-                  <input id="xissueDate" name="issueDate" type="hidden" value="<%= smc?.issueDate || '' %>" />
-                </td>
-              </tr>
-              <tr>
-                <td>วันที่บัตรหมดอายุ</td>
-                <td>:</td>
-                <td>
-                  <span id="expiryDate" class="text-primary"><%= smc?.expiryDate || '-' %></span>
-                  <input id="xexpiryDate" name="expiryDate" type="hidden" value="<%= smc?.expiryDate || '' %>" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
+    <div class="card-body">
+      <div id="runsmc" class="mb-3"></div>
+
+      <form method="post">
+        <div class="row g-3">
+          <div class="col-lg-9">
+            <table class="table table-hover">
+              <tbody>
+                <tr>
+                  <td>เลขประจำตัวประชาชน</td>
+                  <td>:</td>
+                  <td width="250">
+                    <span id="pid" class="text-primary pid"><%= smc?.pid || '-' %></span>
+                    <input id="xpid" name="pid" type="hidden" value="<%= smc?.pid || '' %>" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>ชื่อ (TH)</td>
+                  <td>:</td>
+                  <td>
+                    <span id="nameTh" class="text-primary"><%= smc?.nameTh || '-' %></span>
+                    <input id="xnameTh" name="nameTh" type="hidden" value="<%= smc?.nameTh || '' %>" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>ชื่อ (EN)</td>
+                  <td>:</td>
+                  <td>
+                    <span id="nameEn" class="text-primary"><%= smc?.nameEn || '-' %></span>
+                    <input id="xnameEn" name="nameEn" type="hidden" value="<%= smc?.nameEn || '' %>" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>วันเกิด</td>
+                  <td>:</td>
+                  <td>
+                    <span id="birthDate" class="text-primary"><%= smc?.birthDate || '-' %></span>
+                    <input id="xbirthDate" name="birthDate" type="hidden" value="<%= smc?.birthDate || '' %>" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>ที่อยู่</td>
+                  <td>:</td>
+                  <td>
+                    <span id="address" class="text-primary"><%= smc?.address || '-' %></span>
+                    <input id="xaddress" name="address" type="hidden" value="<%= smc?.address || '' %>" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>วันที่ออกบัตร</td>
+                  <td>:</td>
+                  <td>
+                    <span id="issueDate" class="text-primary"><%= smc?.issueDate || '-' %></span>
+                    <input id="xissueDate" name="issueDate" type="hidden" value="<%= smc?.issueDate || '' %>" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>วันที่บัตรหมดอายุ</td>
+                  <td>:</td>
+                  <td>
+                    <span id="expiryDate" class="text-primary"><%= smc?.expiryDate || '-' %></span>
+                    <input id="xexpiryDate" name="expiryDate" type="hidden" value="<%= smc?.expiryDate || '' %>" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="col-lg-3 text-center">
+            <% if (smc && smc.image) { %>
+              <img id="vimg" src="<%= smc.image %>" width="140" height="160" class="rounded" alt="photo" />
+            <% } else { %>
+              <div class="border rounded d-flex align-items-center justify-content-center" style="width:140px;height:160px;margin:0 auto;">
+                <span class="text-muted small">ไม่มีรูป</span>
+              </div>
+            <% } %>
+            <input id="ximg" name="image" type="hidden" value="<%= smc?.image || '' %>" />
+            <input id="xnimage" name="nimage" type="hidden" value="<%= smc?.nimage || '' %>" />
+
+            <div id="cerpop" class="text-center h6 mt-3"></div>
+          </div>
         </div>
-
-        <div class="col-lg-3 text-center">
-          <% if (smc && smc.image) { %>
-            <img id="vimg" src="<%= smc.image %>" width="140" height="160" class="rounded" alt="photo" />
-          <% } else { %>
-            <div class="border rounded d-flex align-items-center justify-content-center" style="width:140px;height:160px;margin:0 auto;">
-              <span class="text-muted small">ไม่มีรูป</span>
-            </div>
-          <% } %>
-          <input id="ximg" name="image" type="hidden" value="<%= smc?.image || '' %>" />
-          <input id="xnimage" name="nimage" type="hidden" value="<%= smc?.nimage || '' %>" />
-
-          <div id="cerpop" class="text-center h6 mt-3"></div>
-        </div>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </div>

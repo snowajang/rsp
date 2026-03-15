@@ -1,84 +1,302 @@
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="mb-0">Users</h4>
-
-  <form method="get" action="/users" class="d-flex align-items-center gap-2">
-    <input type="hidden" name="page" value="1">
-    <label class="text-muted small mb-0">แสดงต่อหน้า</label>
-    <select name="pageSize" class="form-select form-select-sm" style="width: 90px;" onchange="this.form.submit()">
-      <option value="10" <%= pagination.pageSize === 10 ? 'selected' : '' %>>10</option>
-      <option value="20" <%= pagination.pageSize === 20 ? 'selected' : '' %>>20</option>
-      <option value="30" <%= pagination.pageSize === 30 ? 'selected' : '' %>>30</option>
-    </select>
-  </form>
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4 px-2">
+  <div>
+    <h3 class="mb-1">User Management</h3>
+    <div class="text-muted">จัดการผู้ใช้งาน เพิ่ม แก้ไข ระงับการใช้งาน และติดตามสถานะบัญชีจากหน้าเดียว</div>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#createUserCard" aria-expanded="false">
+      <i class="bi bi-person-plus-fill me-1"></i> เพิ่มผู้ใช้งาน
+    </button>
+  </div>
 </div>
 
-<div class="alert alert-info">
-  การสร้างผู้ใช้ใหม่ผ่าน UI ยังไม่ได้ implement (ส่ง 501) ให้สร้างผู้ใช้ผ่าน Prisma Studio หรือคำสั่ง SQL แทน แล้วตั้งรหัสผ่านเป็น hash ด้วย bcryptjs
+<% if (flash && flash.message) { %>
+  <div class="alert alert-<%= flash.type || 'info' %> alert-dismissible fade show" role="alert">
+    <%= flash.message %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<div class="collapse mb-4" id="createUserCard">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <strong><i class="bi bi-person-vcard me-2 text-primary"></i>เพิ่มผู้ใช้งานใหม่</strong>
+    </div>
+    <div class="card-body">
+      <form method="post" action="/users" class="row g-3">
+        <input type="hidden" name="pageSize" value="<%= pagination.pageSize %>">
+        <input type="hidden" name="search" value="<%= filters.search || '' %>">
+
+        <div class="col-md-4">
+          <label class="form-label">PID</label>
+          <input type="text" name="pid" class="form-control" placeholder="เช่น 1103700000001" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">ชื่อผู้ใช้งาน</label>
+          <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Role</label>
+          <select name="role" class="form-select">
+            <% roles.forEach((role) => { %>
+              <option value="<%= role %>"><%= role %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">สถานะ</label>
+          <select name="isActive" class="form-select">
+            <option value="true" selected>Active</option>
+            <option value="false">Suspended</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" minlength="6" required>
+          <div class="form-text">รหัสผ่านอย่างน้อย 6 ตัวอักษร</div>
+        </div>
+        <div class="col-12 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light border" data-bs-toggle="collapse" data-bs-target="#createUserCard">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">บันทึกผู้ใช้งาน</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <div class="card shadow-sm border-0">
-  <div class="card-header bg-white d-flex justify-content-between align-items-center">
-    <strong>User List</strong>
-    <div class="small text-muted">
-      หน้า <%= pagination.page %>/<%= pagination.totalPages %> (ทั้งหมด <%= pagination.totalItems %>)
+  <div class="card-header bg-white py-3">
+    <div class="row g-3 align-items-center">
+      <div class="col-lg-5">
+        <strong><i class="bi bi-people-fill me-2 text-primary"></i>รายการผู้ใช้งาน</strong>
+        <div class="small text-muted mt-1">หน้า <%= pagination.page %>/<%= pagination.totalPages %> · ทั้งหมด <%= pagination.totalItems %> รายการ</div>
+      </div>
+      <div class="col-lg-7">
+        <form method="get" action="/users" class="row g-2 justify-content-lg-end">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+              <input type="text" name="search" value="<%= filters.search || '' %>" class="form-control" placeholder="ค้นหา name / email / username">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <select name="pageSize" class="form-select" onchange="this.form.submit()">
+              <option value="10" <%= pagination.pageSize === 10 ? 'selected' : '' %>>10 / หน้า</option>
+              <option value="20" <%= pagination.pageSize === 20 ? 'selected' : '' %>>20 / หน้า</option>
+              <option value="30" <%= pagination.pageSize === 30 ? 'selected' : '' %>>30 / หน้า</option>
+            </select>
+          </div>
+          <div class="col-md-3 d-grid">
+            <button type="submit" class="btn btn-outline-primary">ค้นหา</button>
+          </div>
+          <input type="hidden" name="page" value="1">
+        </form>
+      </div>
     </div>
   </div>
 
   <div class="card-body p-0">
-    <table class="table table-hover mb-0 align-middle">
-      <thead>
-        <tr>
-          <th style="width:60px;">#</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th style="width:120px;">Role</th>
-          <th style="width:200px;">Created</th>
-          <th class="text-end" style="width:120px;">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (users && users.length) { %>
-          <% users.forEach((u, idx) => { %>
-            <% const displayIndex = ((pagination.page - 1) * pagination.pageSize) + (idx + 1); %>
-            <tr>
-              <td><%= displayIndex %></td>
-              <td><%= u.name || '' %></td>
-              <td><%= u.email || '' %></td>
-              <td>
-                <span class="badge bg-<%= (u.role === 'admin' ? 'danger' : 'secondary') %>">
-                  <%= u.role || '' %>
-                </span>
-              </td>
-              <td>
-                <%= (u.createdAt && typeof u.createdAt.toLocaleString === 'function')
-                      ? u.createdAt.toLocaleString('th-TH')
-                      : (u.createdAt || '') %>
-              </td>
-              <td class="text-end">
-                <form method="post"
-                      action="/users/<%= u.pid %>/delete?page=<%= pagination.page %>&pageSize=<%= pagination.pageSize %>"
-                      onsubmit="return confirm('ลบผู้ใช้คนนี้?');"
-                      class="d-inline">
-                  <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                </form>
-              </td>
-            </tr>
-          <% }) %>
-        <% } else { %>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
           <tr>
-            <td colspan="6" class="text-center py-4">ยังไม่มีข้อมูลผู้ใช้</td>
+            <th style="width: 70px;">#</th>
+            <th>ข้อมูลผู้ใช้</th>
+            <th style="width: 120px;">Role</th>
+            <th style="width: 140px;">สถานะ</th>
+            <th style="width: 180px;">Last Login</th>
+            <th style="width: 180px;">Created</th>
+            <th class="text-end" style="width: 240px;">Actions</th>
           </tr>
-        <% } %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (users && users.length) { %>
+            <% users.forEach((u, idx) => { %>
+              <% const displayIndex = ((pagination.page - 1) * pagination.pageSize) + (idx + 1); %>
+              <tr>
+                <td><%= displayIndex %></td>
+                <td>
+                  <div class="fw-semibold"><%= u.name || '-' %></div>
+                  <div class="small text-muted">@<%= u.username || '-' %></div>
+                  <div class="small text-muted"><%= u.email || '-' %></div>
+                  <div class="small text-muted">PID: <%= u.pid?.toString?.() || u.pid || '-' %></div>
+                </td>
+                <td>
+                  <span class="badge text-bg-<%= u.role === 'admin' ? 'danger' : 'secondary' %>"><%= u.role %></span>
+                </td>
+                <td>
+                  <% if (u.isActive) { %>
+                    <span class="badge text-bg-success">Active</span>
+                  <% } else { %>
+                    <span class="badge text-bg-warning">Suspended</span>
+                  <% } %>
+                </td>
+                <td class="small text-muted">
+                  <%= u.lastLogin ? new Date(u.lastLogin).toLocaleString('th-TH') : '-' %>
+                </td>
+                <td class="small text-muted">
+                  <%= u.createdAt ? new Date(u.createdAt).toLocaleString('th-TH') : '-' %>
+                </td>
+                <td class="text-end">
+                  <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary btn-edit-user"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editUserModal"
+                      data-id="<%= u.pid?.toString?.() || u.pid %>"
+                      data-username="<%= u.username %>"
+                      data-name="<%= u.name %>"
+                      data-email="<%= u.email %>"
+                      data-role="<%= u.role %>"
+                      data-active="<%= u.isActive ? 'true' : 'false' %>">
+                      <i class="bi bi-pencil-square"></i> Edit
+                    </button>
+
+                    <form method="post" action="/users/<%= u.pid %>/toggle-status" class="d-inline">
+                      <input type="hidden" name="page" value="<%= pagination.page %>">
+                      <input type="hidden" name="pageSize" value="<%= pagination.pageSize %>">
+                      <input type="hidden" name="search" value="<%= filters.search || '' %>">
+                      <button
+                        type="submit"
+                        id="checkActive"
+                        class="btn btn-sm <%= u.isActive ? 'btn-outline-warning' : 'btn-outline-success' %>"
+                        >
+                        <i class="bi <%= u.isActive ? 'bi-pause-circle' : 'bi-check-circle' %>"></i>
+                        <%= u.isActive ? 'Suspend' : 'Activate' %>
+                      </button>
+                    </form>
+
+                    <form method="post" action="/users/<%= u.pid %>/delete" class="d-inline" onsubmit="return confirm('ยืนยันการลบผู้ใช้งานนี้?');">
+                      <input type="hidden" name="page" value="<%= pagination.page %>">
+                      <input type="hidden" name="pageSize" value="<%= pagination.pageSize %>">
+                      <input type="hidden" name="search" value="<%= filters.search || '' %>">
+                      <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="7" class="text-center py-5 text-muted">ไม่พบข้อมูลผู้ใช้งาน</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+  <div class="card-footer bg-white d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+    <div class="small text-muted">แสดงผลตามมาตรฐานการจัดการผู้ใช้: create / update / suspend / delete</div>
     <div class="btn-group">
-      <a class="btn btn-sm btn-outline-secondary <%= pagination.hasPrev ? '' : 'disabled' %>"
-         href="/users?page=<%= pagination.page - 1 %>&pageSize=<%= pagination.pageSize %>">ก่อนหน้า</a>
-      <a class="btn btn-sm btn-outline-secondary <%= pagination.hasNext ? '' : 'disabled' %>"
-         href="/users?page=<%= pagination.page + 1 %>&pageSize=<%= pagination.pageSize %>">ถัดไป</a>
+      <a class="btn btn-sm btn-outline-secondary <%= pagination.hasPrev ? '' : 'disabled' %>" href="/users?page=<%= pagination.page - 1 %>&pageSize=<%= pagination.pageSize %>&search=<%= encodeURIComponent(filters.search || '') %>">ก่อนหน้า</a>
+      <a class="btn btn-sm btn-outline-secondary <%= pagination.hasNext ? '' : 'disabled' %>" href="/users?page=<%= pagination.page + 1 %>&pageSize=<%= pagination.pageSize %>&search=<%= encodeURIComponent(filters.search || '') %>">ถัดไป</a>
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pencil-square me-2 text-primary"></i>แก้ไขข้อมูลผู้ใช้งาน</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" id="editUserForm">
+        <div class="modal-body">
+          <input type="hidden" name="page" value="<%= pagination.page %>">
+          <input type="hidden" name="pageSize" value="<%= pagination.pageSize %>">
+          <input type="hidden" name="search" value="<%= filters.search || '' %>">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">PID</label>
+              <input type="text" id="editPid" class="form-control" disabled>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Username</label>
+              <input type="text" id="editUsername" name="username" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Email</label>
+              <input type="email" id="editEmail" name="email" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">ชื่อผู้ใช้งาน</label>
+              <input type="text" id="editName" name="name" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Role</label>
+              <select id="editRole" name="role" class="form-select">
+                <% roles.forEach((role) => { %>
+                  <option value="<%= role %>"><%= role %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">สถานะ</label>
+              <select id="editIsActive" name="isActive" class="form-select">
+                <option value="true">Active</option>
+                <option value="false">Suspended</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Password ใหม่</label>
+              <input type="password" id="editPassword" name="password" class="form-control" minlength="6" placeholder="เว้นว่างหากไม่ต้องการเปลี่ยนรหัสผ่าน">
+              <div class="form-text">ระบบจะอัปเดตรหัสผ่านเมื่อมีการกรอกค่าใหม่เท่านั้น</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light border" data-bs-dismiss="modal">ปิด</button>
+          <button type="submit" class="btn btn-primary">บันทึกการเปลี่ยนแปลง</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const editModal = document.getElementById('editUserModal');
+    const editForm = document.getElementById('editUserForm');
+    if (!editModal || !editForm) return;
+
+    editModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      if (!button) return;
+
+      const id = button.getAttribute('data-id');
+      const username = button.getAttribute('data-username') || '';
+      const name = button.getAttribute('data-name') || '';
+      const email = button.getAttribute('data-email') || '';
+      const role = button.getAttribute('data-role') || 'user';
+      const active = button.getAttribute('data-active') || 'true';
+
+      editForm.action = `/users/${id}/update`;
+      document.getElementById('editPid').value = id;
+      document.getElementById('editUsername').value = username;
+      document.getElementById('editName').value = name;
+      document.getElementById('editEmail').value = email;
+      document.getElementById('editRole').value = role;
+      document.getElementById('editIsActive').value = active;
+      document.getElementById('editPassword').value = '';
+    });
+  });
+  //onclick="return confirm(\"<%= u.isActive ? 'ยืนยันการระงับผู้ใช้งานนี้?' : 'ยืนยันการเปิดใช้งานผู้ใช้งานนี้?' %>\");"
+  document.getElementById('checkActive')?.addEventListener('click', function (e) {
+    const isActive = this.classList.contains('btn-outline-warning');
+    const action = isActive ? 'ยืนยัน การระงับ ผู้ใช้งานนี้' : 'ยืนยัน การเปิดใช้งาน ผู้ใช้งานนี้';
+    if (!confirm(`ยืนยันการ${action}ผู้ใช้งานนี้?`)) {
+      e.preventDefault();
+    }
+  });
+</script>

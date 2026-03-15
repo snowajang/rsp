@@ -1,60 +1,60 @@
-<div class="row g-3 mb-4">
-  <div class="col-md-4">
-    <div class="card shadow-sm border-0">
-      <div class="card-body">
-        <h6 class="card-subtitle mb-2 text-muted">Total Users</h6>
-        <h3 class="card-title"><%= (metrics && metrics.userCount) ? metrics.userCount : 0 %></h3>
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4 px-2">
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Total Users</h6>
+          <h3 class="card-title"><%= (metrics && metrics.userCount) ? metrics.userCount : 0 %></h3>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header bg-white">
+          <strong>System Info</strong>
+        </div>
+        <div class="card-body">
+          <p class="mb-1">Node Version: <code><%= process.version %></code></p>
+          <p class="mb-1">Env: <code><%= process.env.NODE_ENV || 'development' %></code></p>
+          <p class="mb-0 text-muted small">Admin dashboard</p>
+        </div>
+      </div>
+    </div>
 
-<div class="row g-3">
-  <div class="col-lg-6">
-    <div class="card shadow-sm border-0 mb-3">
-      <div class="card-header bg-white">
-        <strong>System Info</strong>
-      </div>
-      <div class="card-body">
-        <p class="mb-1">Node Version: <code><%= process.version %></code></p>
-        <p class="mb-1">Env: <code><%= process.env.NODE_ENV || 'development' %></code></p>
-        <p class="mb-0 text-muted small">Admin dashboard using express-ejs-layouts.</p>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <strong>Latest Users</strong>
+          <span class="text-muted small">ล่าสุด 10 รายการ</span>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0 align-middle">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th style="width:120px;">Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (latestUsers && latestUsers.length) { %>
+                <% latestUsers.forEach((u) => { %>
+                  <tr>
+                    <td><%= u.name || '' %></td>
+                    <td><%= u.email || '' %></td>
+                    <td>
+                      <span class="badge bg-<%= (u.role === 'admin' ? 'danger' : 'secondary') %>"><%= u.role || '' %></span>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr><td colspan="3" class="text-center py-3">ไม่มีข้อมูล</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="col-lg-6">
-    <div class="card shadow-sm border-0 mb-3">
-      <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <strong>Latest Users</strong>
-        <span class="text-muted small">ล่าสุด 10 รายการ</span>
-      </div>
-      <div class="card-body p-0">
-        <table class="table table-hover mb-0 align-middle">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th style="width:120px;">Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% if (latestUsers && latestUsers.length) { %>
-              <% latestUsers.forEach((u) => { %>
-                <tr>
-                  <td><%= u.name || '' %></td>
-                  <td><%= u.email || '' %></td>
-                  <td>
-                    <span class="badge bg-<%= (u.role === 'admin' ? 'danger' : 'secondary') %>"><%= u.role || '' %></span>
-                  </td>
-                </tr>
-              <% }) %>
-            <% } else { %>
-              <tr><td colspan="3" class="text-center py-3">ไม่มีข้อมูล</td></tr>
-            <% } %>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 </div>

@@ -70,6 +70,7 @@ app.set('layout', 'layouts/main');
 
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.json({ limit: '10mb'}));
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 const routesPath = path.join(__dirname, 'controllers');
@@ -93,6 +94,27 @@ function getRouteFilesRecursive(dir, fileList = []) {
 }
 
 // แทนที่โค้ดเดิม (บรรทัด 43)
+// const routeFiles = getRouteFilesRecursive(routesPath);
+
+// for (const filePath of routeFiles) {
+//     const moduleUrl = pathToFileURL(filePath).href;
+
+//     const routeModule = await import(moduleUrl);
+//     const router = routeModule.default || routeModule.router;
+
+//     if (!router) {
+//         console.warn(`Route file ${filePath} ไม่มี default export ของ express.Router()`);
+//         continue;
+//     }
+    
+
+//     const baseName = path.basename(filePath).replace('.route.js', '');
+//     const mountName = baseName.split('.')[0];
+//     const mountPath = mountName === 'home' ? '/' : `/${mountName}`;
+
+//     app.use(mountPath, router);
+//     console.log(`Mounted route: ${mountPath} -> ${filePath}`);
+// }
 const routeFiles = getRouteFilesRecursive(routesPath);
 
 for (const filePath of routeFiles) {
@@ -105,16 +127,17 @@ for (const filePath of routeFiles) {
         console.warn(`Route file ${filePath} ไม่มี default export ของ express.Router()`);
         continue;
     }
-    
 
-    const baseName = path.basename(filePath).replace('.route.js', '');
-    const mountName = baseName.split('.')[0];
-    const mountPath = mountName === 'home' ? '/' : `/${mountName}`;
+    const relativePath = path.relative(routesPath, filePath).replace(/\\/g, '/');
+    let mountPath = '/' + relativePath.replace(/\.route\.js$/, '');
+
+    if (mountPath === '/home') {
+        mountPath = '/';
+    }
 
     app.use(mountPath, router);
     console.log(`Mounted route: ${mountPath} -> ${filePath}`);
 }
-
 // --- Swagger Config ---
 app.use(
     '/docs',
@@ -123,7 +146,7 @@ app.use(
         explorer: true,
         customSiteTitle: 'Linkage Center API Docs',
         swaggerOptions: {
-            url: '/openapi.yaml'
+            url: '/openapi.linkage.updated.yaml'
         }
     })
 );

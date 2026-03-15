@@ -1,0 +1,273 @@
+<div class="container-fluid">
+  <div class="card border-0 shadow-sm overflow-hidden mb-4" style="border-radius: 1.5rem;">
+    <div class="card-body p-0">
+      <div class="p-1 p-lg-2 text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #38bdf8 100%);">
+        <div class="row align-items-center g-4">
+          <div class="col-lg-12">
+            <div class="rounded-4 p-4 h-100" style="background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px);">
+              <div class="small text-white-50 mb-1">สถานะหน้าจอ</div>
+              <div class="fs-5 fw-semibold mb-3"><%= model ? 'พร้อมแสดงผลข้อมูล' : 'รอค้นหาข้อมูล' %></div>
+              <div class="d-flex gap-3">
+                <div>
+                  <div class="small text-white-50">หมวดข้อมูล</div>
+                  <div class="fw-semibold">บุคคล / ที่อยู่</div>
+                </div>
+                <div>
+                  <div class="small text-white-50">โหมด</div>
+                  <div class="fw-semibold">Realtime Query</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 p-lg-5 bg-white">
+        <form method="post" class="row g-3 align-items-end">
+          <div class="col-xl-8 col-lg-7">
+            <label for="pid" class="form-label fw-semibold text-secondary">
+              เลขประจำตัวประชาชน
+            </label>
+            <div class="input-group input-group-lg shadow-sm">
+              <span class="input-group-text bg-body border-end-0">
+                <i class="bi bi-search"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control border-start-0"
+                id="pid"
+                name="pid"
+                maxlength="13"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="กรอกเลขประจำตัวประชาชน 13 หลัก"
+                value="<%= model?.personalId || '' %>"
+              >
+            </div>
+            <div class="form-text">รองรับเฉพาะตัวเลข 13 หลัก เพื่อค้นหาข้อมูลบุคคลและข้อมูลที่อยู่</div>
+          </div>
+
+          <div class="col-xl-4 col-lg-5">
+            <div class="d-grid d-sm-flex gap-2 justify-content-lg-end">
+              <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm">
+                <i class="bi bi-search me-2"></i>ค้นหาข้อมูล
+              </button>
+              <a href="/job/work1" class="btn btn-light btn-lg px-4 border">
+                <i class="bi bi-arrow-clockwise me-2"></i>ล้างค่า
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <% if (model?.error) { %>
+    <div class="alert alert-danger border-0 shadow-sm d-flex align-items-start gap-3" role="alert" style="border-radius: 1rem;">
+      <i class="bi bi-exclamation-octagon-fill fs-4"></i>
+      <div>
+        <div class="fw-semibold mb-1">ไม่สามารถดึงข้อมูลได้</div>
+        <div><%= model.error %></div>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (model && !model.error) { %>
+    <div class="row g-4 mb-4">
+      <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 1.25rem;">
+          <div class="card-body">
+            <div class="small text-secondary mb-1">เลขประจำตัวประชาชน</div>
+            <div class="fs-5 fw-bold text-primary"><%= model.personalID || '-' %></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 1.25rem;">
+          <div class="card-body">
+            <div class="small text-secondary mb-1">ชื่อ - สกุล</div>
+            <div class="fs-5 fw-bold"><%= model.fullnameAndRank || '-' %></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 1.25rem;">
+          <div class="card-body">
+            <div class="small text-secondary mb-1">เพศ</div>
+            <div class="fs-5 fw-bold"><%= model.genderDesc || '-' %></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 1.25rem;">
+          <div class="card-body">
+            <div class="small text-secondary mb-1">อายุ</div>
+            <div class="fs-5 fw-bold"><%= model.age || '-' %> ปี</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 1.25rem;">
+          <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(29,78,216,.1); color: #1d4ed8;">
+                <i class="bi bi-person-lines-fill fs-5"></i>
+              </div>
+              <div>
+                <h2 class="h5 fw-bold mb-1">ข้อมูลบุคคล</h2>
+                <div class="text-secondary small">รายละเอียดประจำตัวและสถานะบุคคล</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body px-4 pb-4">
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="rounded-4 p-3 bg-light-subtle border">
+                  <div class="small text-secondary">ชื่อ - สกุล</div>
+                  <div class="fw-semibold fs-5"><%= model.fullnameAndRank || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">ชื่อภาษาอังกฤษ</div>
+                  <div class="fw-semibold"><%= model.englishName || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">วันเกิด</div>
+                  <div class="fw-semibold"><%= model.dateOfBirth || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">สัญชาติ</div>
+                  <div class="fw-semibold"><%= model.nationalityDesc || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">สถานะบุคคล</div>
+                  <div class="fw-semibold"><%= model.statusOfPersonDesc || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">ชื่อบิดา</div>
+                  <div class="fw-semibold"><%= model.fatherName || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">ชื่อมารดา</div>
+                  <div class="fw-semibold"><%= model.motherName || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">เลขประจำประชาชนบิดา</div>
+                  <div class="fw-semibold"><%= model.fatherPersonalID || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">เลขประจำประชาชนมารดา</div>
+                  <div class="fw-semibold"><%= model.motherPersonalID || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">สัญชาติบิดา</div>
+                  <div class="fw-semibold"><%= model.fatherNationalID || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">สัญชาติมารดา</div>
+                  <div class="fw-semibold"><%= model.motherNationalID || '-' %></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 1.25rem;">
+          <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(14,165,233,.12); color: #0284c7;">
+                <i class="bi bi-house-door-fill fs-5"></i>
+              </div>
+              <div>
+                <h2 class="h5 fw-bold mb-1">ข้อมูลที่อยู่</h2>
+                <div class="text-secondary small">รายละเอียดทะเบียนบ้านและที่อยู่ปัจจุบัน</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body px-4 pb-4">
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="rounded-4 p-3 bg-light-subtle border">
+                  <div class="small text-secondary">ที่อยู่</div>
+                  <div class="fw-semibold fs-6"><%= model.address || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">รหัสประจำบ้าน</div>
+                  <div class="fw-semibold"><%= model.houseID || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">ประเภทบ้าน</div>
+                  <div class="fw-semibold"><%= model.houseTypeDesc || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">สถานะเจ้าบ้าน</div>
+                  <div class="fw-semibold"><%= model.ownerStatusDesc || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">รหัสไปรษณีย์</div>
+                  <div class="fw-semibold"><%= model.postcode || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">วันที่ย้ายเข้า</div>
+                  <div class="fw-semibold"><%= model.dateOfMoveIn || '-' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-4 p-3 bg-light-subtle border h-100">
+                  <div class="small text-secondary">วันที่จำหน่ายบ้าน</div>
+                  <div class="fw-semibold"><%= model.dateOfTerminate || '-' %></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% } else if (!model?.error) { %>
+    <div class="card border-0 shadow-sm" style="border-radius: 1.25rem;">
+      <div class="card-body p-5 text-center">
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 72px; height: 72px; background: rgba(29,78,216,.08); color: #1d4ed8;">
+          <i class="bi bi-search-heart fs-1"></i>
+        </div>
+        <h3 class="h4 fw-bold mb-2">พร้อมสำหรับการค้นหาข้อมูล</h3>
+        <p class="text-secondary mb-0">
+          กรอกเลขประจำตัวประชาชน 13 หลักด้านบน แล้วกดปุ่มค้นหาข้อมูลเพื่อแสดงรายละเอียดบุคคลและที่อยู่
+        </p>
+      </div>
+    </div>
+  <% } %>
+</div>

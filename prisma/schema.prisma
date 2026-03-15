@@ -7,15 +7,17 @@ datasource db {
 }
 
 model User {
-  pid           BigInt   @id @default(0)
-  name          String
-  email         String   @unique
-  username      String   @unique
-  passwordHash  String
-  role          String   @default("user")
+  pid           BigInt   @id
+  username      String   @unique @db.VarChar(100)
+  email         String   @unique @db.VarChar(191)
+  name          String   @db.VarChar(255)
+  passwordHash  String   @db.VarChar(255)
+  role          String   @default("user") @db.VarChar(50)
+  isActive      Boolean  @default(true)
+  token         String   @default("") @db.VarChar(255)
   createdAt     DateTime @default(now())
-  lastLogin     DateTime @default(now())
-  token         String   @db.VarChar(255) @default("")
+  updatedAt     DateTime @updatedAt
+  lastLogin     DateTime?
 }
 
 model thaid {
@@ -24,8 +26,11 @@ model thaid {
   scope         String   @db.Text @default("")
   userpid       BigInt   @default(0)
   termdate      Int      @default(0)
+  isActive      Boolean  @default(true)
+  isDeleted     Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
 
   @@id([istate, termdate])
 }

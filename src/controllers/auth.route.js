@@ -5,8 +5,8 @@ import bcrypt from 'bcryptjs';
 const router = Router();
 
 router.get('/login', ensureGuest, (req, res) => {
-    let error = req.query?.error || null;
-    res.render('auth/login', { title: 'Login', error: error, layout: false });
+    const error = req.query?.error || null;
+    res.render('auth/login', { title: 'Login', error, layout: false });
 });
 
 router.post('/login', ensureGuest, async (req, res, next) => {
@@ -16,7 +16,7 @@ router.post('/login', ensureGuest, async (req, res, next) => {
         if (!username || !password) {
             return res.status(400).render('auth/login', {
                 title: 'Login',
-                error: 'กรุณากรอกอีเมลและรหัสผ่าน',
+                error: 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน',
                 layout: false
             });
         }
@@ -30,6 +30,13 @@ router.post('/login', ensureGuest, async (req, res, next) => {
             }); 
         }
 
+        if (!user.isActive) {
+            return res.status(403).render('auth/login', {
+                title: 'Login',
+                error: 'บัญชีผู้ใช้นี้ถูกระงับการใช้งาน',
+                layout: false
+            });
+        }
         const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) {
             return res.status(401).render('auth/login', {
@@ -39,11 +46,17 @@ router.post('/login', ensureGuest, async (req, res, next) => {
             });
         }
 
+        await req.prisma.user.update({
+            where: { pid: user.pid },
+            data: { lastLogin: new Date() }
+        });
+        
         req.session.user = {
-            id: user.pid,
+            id: user.pid.toString(),
             name: user.name,
             email: user.email,
-            role: user.role
+            role: user.role,
+            isActive: user.isActive
         };
 
         res.redirect('/');
@@ -67,16 +80,17 @@ router.post('/thaid', ensureGuest, async (req, res, next) => {
             });
         }
 
-        let rs = await fetch(`http://localhost:3000/linkage/api/login/thaid/auth`, {
+        let rs = await fetch(`http://localhost:3000/api/linkage/login/thaid/auth`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ pid: Number(pid), name, accessToken: access_token })
         });
         if (!rs.ok) {
-            console.log('THAID LOGIN API ERROR:', rs.status, await rs.text());
+            console.log('THAID LOGIN API ERROR:', rs.status);
+            let data = await rs.json();
             return res.status(401).render('auth/login', {
                 title: 'Login',
-                error: 'การตรวจสอบล้มเหลว',
+                error: data.errorMessage || 'การตรวจสอบล้มเหลว',
                 layout: false
             });
         }
@@ -90,6 +104,19 @@ router.post('/thaid', ensureGuest, async (req, res, next) => {
                 create: { pid: Number(pid), name, email: 'admin@console.com', username: 'preuser', token: itoken.data.token, role: 'user', passwordHash: '' }
             });
             
+            rs = await fetch(`http://localhost:3000/api/linkage/user`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${itoken.data.token}` }
+            });
+            let job = null;
+            if (!rs.ok) {
+                console.log('THAID LOGIN USER API ERROR:', rs.status, await rs.text());
+                job = {};
+            } else {
+                let userinfo = await rs.json();
+                console.log('THAID LOGIN USER API SUCCESS:', userinfo);
+                job = userinfo?.data?.job || {};
+            }
             req.session.user = {
                 id: pid,
                 name: name,

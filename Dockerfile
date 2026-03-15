@@ -11,7 +11,8 @@ COPY .env ./.env
 
 RUN npm install
 RUN npx prisma generate
-
+COPY prisma ./prisma
+COPY public ./public
 COPY src ./src
 
 EXPOSE 3000

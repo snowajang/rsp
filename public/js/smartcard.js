@@ -1,7 +1,8 @@
-var smclinkread = "http://localhost:12345/smartcard"
-var smclinkreadimage = "http://localhost:12345/smartcard/umbstring/image"
-var smclinkreadcid = "http://localhost:12345/checkcard/umbstring/cid"
-var smclinkreadlaser = "http://localhost:12345/checkcard/umbstring/laser"
+var server_log = "http://localhost:8989"
+var smclinkread = `${server_log}/smartcard`
+var smclinkreadimage = `${server_log}/smartcard/umbstring/image`
+var smclinkreadcid = `${server_log}/checkcard/umbstring/cid`
+var smclinkreadlaser = `${server_log}/checkcard/umbstring/laser`
 
 function smcreaderlist(){
 	fetch(smclinkread)

@@ -53,7 +53,7 @@ router.post("/api/death", async (req, res, next) => {
         }
     } catch (error) {
         console.error("Error processing request:", error);
-        next(error);      
+        return res.status(200).send({ errorNumber: 9999, errorMessage: "พบปัญหาการเชื่อมต่อ กรุณาติดต่อผู้ดูและระบบ", data: data });
     }
 });
 
@@ -163,8 +163,8 @@ router.post('/api/checklaser', async (req, res, next) => {
 
         return res.status(response.ok ? 200 : 500).json(result);
     } catch (error) {
-        console.error('Error in /api/checklaser:', error);        
-        next(error);
+        console.error('Error in /api/checklaser:', error);       
+        return res.status(200).send({ errorNumber: 9999, errorMessage: "พบปัญหาการเชื่อมต่อ กรุณาติดต่อผู้ดูและระบบ", data: data });
     }
 });
 
@@ -274,7 +274,7 @@ router.post('/api/checkchip', async (req, res) => {
         return res.status(response.ok ? 200 : 500).json(result);
     } catch (err) {
         console.error('Error in /api/checkchip:', err);
-        next(err);
+        return res.status(200).send({ errorNumber: 9999, errorMessage: "พบปัญหาการเชื่อมต่อ กรุณาติดต่อผู้ดูและระบบ", data: data });
     }
 });
 
