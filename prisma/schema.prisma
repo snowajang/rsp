@@ -6,7 +6,7 @@ datasource db {
   provider = "mysql"
 }
 
-model User {
+model member {
   pid           BigInt   @id
   username      String   @unique @db.VarChar(100)
   email         String   @unique @db.VarChar(191)

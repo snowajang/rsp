@@ -5,8 +5,8 @@ const router = Router();
 
 router.get('/', ensureAuth, async (req, res, next) => {
     try {
-        const userCount = await req.prisma.user.count();
-        const latestUsers = await req.prisma.user.findMany({
+        const userCount = await req.prisma.member.count();
+        const latestUsers = await req.prisma.member.findMany({
             orderBy: { createdAt: 'desc' },
             take: 10
         });

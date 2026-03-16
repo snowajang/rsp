@@ -144,7 +144,7 @@ function buildRedirect(page, pageSize, search, statusFilter, type, message) {
 }
 
 async function loadOwners(prisma) {
-  const users = await prisma.user.findMany({
+  const users = await prisma.member.findMany({
     select: { pid: true, name: true, username: true, role: true, isActive: true },
     orderBy: [{ role: 'asc' }, { name: 'asc' }, { username: 'asc' }],
   });

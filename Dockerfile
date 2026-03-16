@@ -1,8 +1,9 @@
-FROM node:22-alpine
-
+FROM node:current-slim
+ENV HTTP_PROXY=http://172.16.82.3:3128
+ENV HTTPS_PROXY=http://172.16.82.3:3128
 WORKDIR /app
 
-RUN apk add --no-cache openssl
+RUN apt update -y && apt upgrade -y
 
 COPY package*.json ./
 COPY prisma ./prisma

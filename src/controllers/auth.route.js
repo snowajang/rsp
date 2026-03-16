@@ -21,7 +21,7 @@ router.post('/login', ensureGuest, async (req, res, next) => {
             });
         }
 
-        const user = await req.prisma.user.findUnique({ where: { username } });
+        const user = await req.prisma.member.findUnique({ where: { username } });
         if (!user) {
             return res.status(401).render('auth/login', {
                 title: 'Login',
@@ -46,7 +46,7 @@ router.post('/login', ensureGuest, async (req, res, next) => {
             });
         }
 
-        await req.prisma.user.update({
+        await req.prisma.member.update({
             where: { pid: user.pid },
             data: { lastLogin: new Date() }
         });
@@ -98,11 +98,33 @@ router.post('/thaid', ensureGuest, async (req, res, next) => {
         let itoken = await rs.json();
         console.log('THAID LOGIN API SUCCESS:', itoken);
         if (itoken?.data?.token) {
-            let user = await req.prisma.user.upsert({
-                where: { pid: Number(pid) },
-                update: { name, token: itoken.data.token },
-                create: { pid: Number(pid), name, email: 'admin@console.com', username: 'preuser', token: itoken.data.token, role: 'user', passwordHash: '' }
+            const pidNumber = Number(pid);
+
+            let user = await req.prisma.member.findUnique({
+                where: { pid: pidNumber }
             });
+
+            if (!user) {
+                user = await req.prisma.member.create({
+                    data: {
+                        pid: pidNumber,
+                        name,
+                        email: 'admin@console.com',
+                        username: 'preuser',
+                        token: itoken.data.token,
+                        role: 'user',
+                        passwordHash: ''
+                    }
+                });
+            } else {
+                user = await req.prisma.member.update({
+                    where: { pid: pidNumber },
+                    data: {
+                        name,
+                        token: itoken.data.token
+                    }
+                });
+            }
             
             rs = await fetch(`http://localhost:3000/api/linkage/user`, {
                 method: 'POST',

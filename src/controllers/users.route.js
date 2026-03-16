@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { ensureAuth } from '../middlewares/auth.js';
 
 const router = Router();
-const allowedRoles = new Set(['admin', 'user']);
+const allowedRoles = new Set(['admin', 'user', 'dev']);
 const allowedPageSizes = new Set([10, 20, 30]);
 
 function toInt(v, fallback) {
@@ -70,12 +70,12 @@ router.get('/', ensureAuth, async (req, res, next) => {
       : pageSize;
 
     const where = buildWhere(search);
-    const totalItems = await req.prisma.user.count({ where });
+    const totalItems = await req.prisma.member.count({ where });
     const totalPages = Math.max(1, Math.ceil(totalItems / finalPageSize));
     const page = clamp(pageRaw, 1, totalPages);
     const skip = (page - 1) * finalPageSize;
 
-    const users = await req.prisma.user.findMany({
+    const users = await req.prisma.member.findMany({
       where,
       orderBy: [{ createdAt: 'desc' }, { pid: 'desc' }],
       skip,
@@ -127,7 +127,7 @@ router.post('/', ensureAuth, async (req, res, next) => {
       return res.redirect(buildUsersQuery(1, normalizePageSize(toInt(req.body.pageSize, 10)), safeTrim(req.body.search)) + '&status=danger&message=' + encodeURIComponent('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'));
     }
 
-    const duplicate = await req.prisma.user.findFirst({
+    const duplicate = await req.prisma.member.findFirst({
       where: {
         OR: [
           { pid },
@@ -142,7 +142,7 @@ router.post('/', ensureAuth, async (req, res, next) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    await req.prisma.user.create({
+    await req.prisma.member.create({
       data: { pid, username, name, email, role, isActive, passwordHash }
     });
 
@@ -176,7 +176,7 @@ router.post('/:id/update', ensureAuth, async (req, res, next) => {
       return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=danger&message=' + encodeURIComponent('กรุณากรอกข้อมูลสำคัญให้ครบถ้วน'));
     }
 
-    const duplicate = await req.prisma.user.findFirst({
+    const duplicate = await req.prisma.member.findFirst({
       where: {
         AND: [
           { NOT: { pid } },
@@ -202,7 +202,7 @@ router.post('/:id/update', ensureAuth, async (req, res, next) => {
       data.passwordHash = await bcrypt.hash(password, 10);
     }
 
-    await req.prisma.user.update({ where: { pid }, data });
+    await req.prisma.member.update({ where: { pid }, data });
     return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=success&message=' + encodeURIComponent('แก้ไขข้อมูลผู้ใช้งานเรียบร้อยแล้ว'));
   } catch (err) {
     if (err?.code === 'P2002') {
@@ -223,7 +223,7 @@ router.post('/:id/toggle-status', ensureAuth, async (req, res, next) => {
       return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=danger&message=' + encodeURIComponent('ไม่พบรหัสผู้ใช้'));
     }
 
-    const user = await req.prisma.user.findUnique({ where: { pid } });
+    const user = await req.prisma.member.findUnique({ where: { pid } });
     if (!user) {
       return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=danger&message=' + encodeURIComponent('ไม่พบข้อมูลผู้ใช้'));
     }
@@ -232,7 +232,7 @@ router.post('/:id/toggle-status', ensureAuth, async (req, res, next) => {
       return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=warning&message=' + encodeURIComponent('ไม่สามารถระงับบัญชีที่กำลังใช้งานอยู่ได้'));
     }
 
-    await req.prisma.user.update({
+    await req.prisma.member.update({
       where: { pid },
       data: { isActive: !user.isActive }
     });
@@ -259,7 +259,7 @@ router.post('/:id/delete', ensureAuth, async (req, res, next) => {
       return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=warning&message=' + encodeURIComponent('ไม่สามารถลบบัญชีที่กำลังใช้งานอยู่ได้'));
     }
 
-    await req.prisma.user.delete({ where: { pid } });
+    await req.prisma.member.delete({ where: { pid } });
     return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=success&message=' + encodeURIComponent('ลบผู้ใช้งานเรียบร้อยแล้ว'));
   } catch (err) {
     next(err);
