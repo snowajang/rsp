@@ -6,6 +6,7 @@
   const isSmartcardSection = path.startsWith('/smartcard'); // parent
   const isSmartcardRead = path === '/smartcard' || path.startsWith('/smartcard/read');
   const isSmartcardLogs = path.startsWith('/smartcard/logs');
+  const isState = path.startsWith('/state');
   const isJobWork = path.startsWith('/job');
   const isJobWork1 = path.startsWith('/job/work1') && !path.startsWith('/job/work10');
   const isJobWork2 = path.startsWith('/job/work2');
@@ -22,7 +23,7 @@
 
 <div id="sidebar-wrapper" class="d-flex flex-column">
   <div class="sidebar-heading">
-    <div>
+    <div class="mt-3 ms-2">
       <div>Linkage EXAT</div>
       <small class="text-white-50">ตรวจสอบและค้นหาข้อมูล</small>
     </div>
@@ -42,7 +43,7 @@
       <span>ผู้ใช้งาน</span>
     </a>
     <!-- Users -->
-    <a href="/state" class="list-group-item list-group-item-action <%= isUsers ? 'active' : '' %>">
+    <a href="/state" class="list-group-item list-group-item-action <%= isState ? 'active' : '' %>">
       <i class="bi bi-people"></i>
       <span>ไทยดี</span>
     </a>

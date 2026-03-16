@@ -291,7 +291,7 @@
       document.getElementById('editPassword').value = '';
     });
   });
-  //onclick="return confirm(\"<%= u.isActive ? 'ยืนยันการระงับผู้ใช้งานนี้?' : 'ยืนยันการเปิดใช้งานผู้ใช้งานนี้?' %>\");"
+  
   document.getElementById('checkActive')?.addEventListener('click', function (e) {
     const isActive = this.classList.contains('btn-outline-warning');
     const action = isActive ? 'ยืนยัน การระงับ ผู้ใช้งานนี้' : 'ยืนยัน การเปิดใช้งาน ผู้ใช้งานนี้';
