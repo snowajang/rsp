@@ -52,7 +52,29 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-
+  thaid:
+    build:
+      context: ./thaid/
+    container_name: nsf-linkage-thaid
+    environment:
+      - TZ=Asia/Bangkok
+      - PORTS=3000
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - CALLBACK=${CALLBACK}
+      - API_KEY=${API_KEY}
+      - API_DB_URL=${API_DB_URL}
+      - XUSERNAME=${XUSERNAME}
+      - XPASSWORD=${XPASSWORD}
+      - STATE=a21bce34
+      - scope=pid name name_en birthdate address given_name middle_name family_name given_name_en middle_name_en family_name_en gender smartcard_code title title_en date_of_issuance date_of_expiry
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"   # number of files or file count
+        max-size: "10m" # file size
+    ports:
+      - 3005:3000
 volumes:
   db_data:
 

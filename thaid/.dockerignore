@@ -1,0 +1,10 @@
+**/node_modules/
+
+**/prisma/migrations
+.git
+npm-debug.log
+.coverage
+.coverage.*
+.aws
+.dockerignore
+Dockerfile
