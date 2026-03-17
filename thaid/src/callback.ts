@@ -83,52 +83,29 @@ export default {
 
                         let vurl = process.env.page || "http://localhost/thaid";
 
-                        let API_DB_URL = "" + process.env.API_DB_URL || "http://api:3000/";
-                        let headers = {
+                        let API_DB_URL = "" + process.env.API_DB_URL || "http://app:3000/";
+                        headers = {
                             'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'Authorization': ''
+                            'Accept': 'application/json'
                         }
-                        console.log(process.env)
-                        let body = {
-                            'username': process.env.XUSERNAME,
-                            'password': process.env.XPASSWORD,
-                            'appId': 'appID1',
-                        }
-                        let res_auth = await axios.post(`${API_DB_URL}/app/login/`, JSON.stringify(body), { headers });
-                        
+                        let res_auth = await fetch(`${API_DB_URL}/api/thaid_states?state=${state}`, option);
                         if (res_auth.status == 200) {
-                            headers.Authorization = 'Bearer ' + res_auth.data.token;
-                            
-                            res_auth = await axios.get(`${API_DB_URL}/api/thaid_states?state=${state}`,{ headers });
-                            if (res_auth.status == 200) {
-                                let data = res_auth.data;
-                                if (data && data.length > 0) {
-                                    try {
-                                        vurl = data[0].return_url || vurl;
-                                        scope = JSON.parse(data[0].scope).data.join(" ") || scope;
-                                    } catch (error) {
-                                        console.log(error); 
-                                        state = "webapp";
-                                        scope = "pid name";                                       
-                                    }
-                                } else {
-                                    console.log("No data found for state:", data);
-                                    state = "webapp";
-                                    scope = "pid name";
+                            let rs = await res_auth.json().catch(() => []) || [];
+                            let data = rs?.data || [];
+                            if (data && data.length > 0) {
+                                try {
+                                    vurl = data[0].return_url || vurl;
+                                } catch (error) {
+                                    console.log(error); 
+                                    state = "webapp";                                   
                                 }
                             } else {
-                                console.log("No data res_auth state:", res_auth);
+                                console.log("No data found for state:", data);
                                 state = "webapp";
-                                scope = "pid name";
                             }
-                        }
-                        console.log(vurl);
-                        console.log(thaid);
-                        if (state==="webapp" && scope.trim() === ""){
-                            scope = "pid name";
-                        }
-                        
+                        } else {
+                            state = "webapp";
+                        }  
                         console.log("scope",scope);
                         let html = '<html><body>';
                         html += `   <form id="iform" method="POST" action="${vurl}">`;
@@ -228,6 +205,7 @@ export default {
                         headers = {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
+                            'Connection':'close'
                         }
                         let res_auth = await fetch(`${API_DB_URL}/api/thaid_states?state=${state}`, option);
                         if (res_auth.status == 200) {
@@ -271,41 +249,31 @@ export default {
                 try {
                     let vurl = process.env.page || "http://localhost/thaid";
 
-                    let API_DB_URL = "" + process.env.API_DB_URL || "http://api:3000/";
-                    let headers = {
+                    let API_DB_URL = "" + process.env.API_DB_URL || "http://app:3000/";
+                    headers = {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'Authorization': ''
+                        'Connection':'close'
                     }
-                    console.log(process.env)
-                    let body = {
-                        'username': process.env.XUSERNAME,
-                        'password': process.env.XPASSWORD,
-                        'appId': 'appID1',
-                    }
-                    let res_auth = await axios.post(`${API_DB_URL}/app/login/`, JSON.stringify(body), { headers });
-                    
+                    let res_auth = await fetch(`${API_DB_URL}/api/thaid_states?state=${state}`, option);
                     if (res_auth.status == 200) {
-                        headers.Authorization = 'Bearer ' + res_auth.data.token;
-                        
-                        res_auth = await axios.get(`${API_DB_URL}/api/thaid_states?state=${state}`,{ headers });
-                        if (res_auth.status == 200) {
-                            let data = res_auth.data;
-                            if (data && data.length > 0) {
-                                try {
-                                    vurl = data[0].return_url || vurl;
-                                } catch (error) {
-                                    console.log(error); 
-                                    state = "webapp";                                   
-                                }
-                            } else {
-                                console.log("No data found for state:", data);
-                                state = "webapp";
+                        let rs = await res_auth.json().catch(() => []) || [];
+                        let data = rs?.data || [];
+                        if (data && data.length > 0) {
+                            try {
+                                vurl = data[0].return_url || vurl;
+                            } catch (error) {
+                                console.log(error); 
+                                state = "webapp";                                   
                             }
                         } else {
+                            console.log("No data found for state:", data);
                             state = "webapp";
                         }
-                    }
+                    } else {
+                        state = "webapp";
+                    }  
+                    
                     console.log(vurl);
                     
                     let html = '<html><body>';
