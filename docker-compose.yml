@@ -55,7 +55,7 @@ services:
   thaid:
     build:
       context: ./thaid/
-    container_name: nsf-linkage-thaid
+    container_name: thaid
     environment:
       - TZ=Asia/Bangkok
       - PORTS=3000

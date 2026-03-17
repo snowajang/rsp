@@ -84,11 +84,14 @@ export default {
                         let vurl = process.env.page || "http://localhost/thaid";
 
                         let API_DB_URL = "" + process.env.API_DB_URL || "http://app:3000/";
-                        headers = {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                        let res_auth = await fetch(`${API_DB_URL}/api/thaid_states?state=${state}`, option);
+                        
+                        let res_auth = await fetch(`${API_DB_URL}/api/thaid_states?state=${state}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        });
                         if (res_auth.status == 200) {
                             let rs = await res_auth.json().catch(() => []) || [];
                             let data = rs?.data || [];
@@ -202,12 +205,14 @@ export default {
                         let vurl = process.env.page || "http://localhost/thaid";
 
                         let API_DB_URL = "" + process.env.API_DB_URL || "http://app:3000/";
-                        headers = {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'Connection':'close'
-                        }
-                        let res_auth = await fetch(`${API_DB_URL}/api/thaid_states?state=${state}`, option);
+                        
+                        let res_auth = await fetch(`${API_DB_URL}/api/thaid_states?state=${state}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        });
                         if (res_auth.status == 200) {
                             let rs = await res_auth.json().catch(() => []) || [];
                             let data = rs?.data || [];
@@ -250,12 +255,14 @@ export default {
                     let vurl = process.env.page || "http://localhost/thaid";
 
                     let API_DB_URL = "" + process.env.API_DB_URL || "http://app:3000/";
-                    headers = {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'Connection':'close'
-                    }
-                    let res_auth = await fetch(`${API_DB_URL}/api/thaid_states?state=${state}`, option);
+                    
+                    let res_auth = await fetch(`${API_DB_URL}/api/thaid_states?state=${state}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    });
                     if (res_auth.status == 200) {
                         let rs = await res_auth.json().catch(() => []) || [];
                         let data = rs?.data || [];
@@ -346,7 +353,7 @@ export default {
             } else {
                 return res.json({ 
                     state: state,
-                    thaid: thaid,
+                    thaid: null,
                     error: error_msg 
                 });
             }
@@ -354,7 +361,7 @@ export default {
             console.log(error)
             return res.json({ 
                 state: state,
-                thaid: thaid,
+                thaid: null,
                 error: error });
         }
     }

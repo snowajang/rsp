@@ -156,7 +156,8 @@ router.post('/thaid', ensureGuest, async (req, res, next) => {
 
 router.post('/thaidlogin', ensureGuest, async (req, res, next) => {
     try {
-        res.redirect('https://web-app.bora.dopa.go.th/thaid3/auth?state=thaidlogin');
+        // res.redirect('https://web-app.bora.dopa.go.th/thaid3/auth?state=thaidlogin');
+        res.redirect('http://thaid:3005/auth?state=webapp');
     } catch (err) {
         next(err);
     }
