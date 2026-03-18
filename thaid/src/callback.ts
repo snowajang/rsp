@@ -97,7 +97,16 @@ export default {
                             let data = rs?.data || [];
                             if (data && data.length > 0) {
                                 try {
-                                    vurl = data[0].return_url || vurl;
+                                    vurl = data[0].returnurl || vurl;
+                                    scope = data[0].scope || "";
+                                    try {
+                                        const parsedScope = JSON.parse(scope);
+                                        if (Array.isArray(parsedScope?.data)) {
+                                            scope = parsedScope.data.join(" " );
+                                        }
+                                    } catch (e) {
+                                        console.log(e);
+                                    }
                                 } catch (error) {
                                     console.log(error); 
                                     state = "webapp";                                   
@@ -218,7 +227,7 @@ export default {
                             let data = rs?.data || [];
                             if (data && data.length > 0) {
                                 try {
-                                    vurl = data[0].return_url || vurl;
+                                    vurl = data[0].returnurl || vurl;
                                 } catch (error) {
                                     console.log(error); 
                                     state = "webapp";                                   
@@ -268,7 +277,7 @@ export default {
                         let data = rs?.data || [];
                         if (data && data.length > 0) {
                             try {
-                                vurl = data[0].return_url || vurl;
+                                vurl = data[0].returnurl || vurl;
                             } catch (error) {
                                 console.log(error); 
                                 state = "webapp";                                   
@@ -322,7 +331,7 @@ export default {
                             let data = res_auth.data;
                             if (data && data.length > 0) {
                                 try {
-                                    vurl = data[0].return_url || vurl;
+                                    vurl = data[0].returnurl || vurl;
                                 } catch (error) {
                                     console.log(error); 
                                     state = "webapp";                                   

@@ -1,0 +1,10 @@
+Changed files:
+.env
+README.md
+docker-compose.yml
+src/controllers/auth.route.js
+thaid/src/callback.ts
+
+Added files:
+nginx/certs/README.txt
+nginx/conf.d/default.conf
