@@ -1,0 +1,64 @@
+<div class="print-page bg-white mx-auto" style="max-width: 900px;">
+  <div class="d-flex justify-content-between align-items-start mb-3 no-print">
+    <a href="<%= routeBase %>" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>กลับ
+    </a>
+    <button type="button" class="btn btn-dark btn-sm" onclick="window.print()">
+      <i class="bi bi-printer me-1"></i>พิมพ์เอกสาร
+    </button>
+  </div>
+
+  <div class="border rounded-3 p-4 p-md-5 shadow-sm print-sheet">
+    <div class="text-center mb-4">
+      <div class="fw-semibold" style="font-size: 1.15rem;">ข้อมูลบุคคล (Linkage)</div>
+      <div class="text-secondary small mt-1"><%= subtitle %></div>
+    </div>
+
+    <div class="mb-4">
+      <div class="row gy-2 gx-4 small">
+        <div class="col-md-6"><strong>ชื่อ-นามสกุล:</strong> <%= model.fullnameAndRank || '-' %></div>
+        <div class="col-md-6"><strong>เลขประจำตัวประชาชน:</strong> <%= model.personalID || '-' %></div>
+        <div class="col-md-6"><strong>สัญชาติ:</strong> <%= model.nationalityDesc || '-' %></div>
+        <div class="col-md-6"><strong>เพศ:</strong> <%= model.genderDesc || '-' %></div>
+        <div class="col-md-6"><strong>วันเกิด:</strong> <%= model.dateOfBirth || '-' %></div>
+        <div class="col-md-6"><strong>อายุ:</strong> <%= model.age || '-' %></div>
+        <div class="col-md-6"><strong>ชื่อบิดา:</strong> <%= model.fatherName || '-' %></div>
+        <div class="col-md-6"><strong>เลขประจำตัวประชาชนบิดา:</strong> <%= model.fatherPersonalID || '-' %></div>
+        <div class="col-md-6"><strong>สัญชาติบิดา:</strong> <%= model.fatherNationalityDesc || '-' %></div>
+        <div class="col-md-6"><strong>ชื่อมารดา:</strong> <%= model.motherName || '-' %></div>
+        <div class="col-md-6"><strong>เลขประจำตัวประชาชนมารดา:</strong> <%= model.motherPersonalID || '-' %></div>
+        <div class="col-md-6"><strong>สัญชาติมารดา:</strong> <%= model.motherNationalityDesc || '-' %></div>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <div class="fw-semibold border-bottom pb-2 mb-3">รายการข้อมูลที่อยู่ตามทะเบียนบ้าน</div>
+      <div class="row gy-2 gx-4 small">
+        <div class="col-12"><strong>ที่อยู่:</strong> <%= model.address || '-' %></div>
+        <div class="col-md-6"><strong>รหัสประจำบ้าน:</strong> <%= model.houseID || '-' %></div>
+        <div class="col-md-6"><strong>ลักษณะบ้าน:</strong> <%= model.houseTypeDesc || '-' %></div>
+        <div class="col-md-6"><strong>สถานะเจ้าบ้าน:</strong> <%= model.ownerStatusDesc || '-' %></div>
+        <div class="col-md-6"><strong>รหัสไปรษณีย์:</strong> <%= model.postcode || '-' %></div>
+        <div class="col-md-6"><strong>วันเดือนปีที่ย้ายเข้า:</strong> <%= model.dateOfMoveIn || '-' %></div>
+        <div class="col-md-6"><strong>วันเดือนปีที่จำหน่ายออกจากบ้าน:</strong> <%= model.dateOfTerminate || '-' %></div>
+      </div>
+    </div>
+
+    <div class="small text-secondary mt-5">
+      ผู้ขอใช้ระบบข้อมูลอิเล็กทรอนิกส์ หน่วยงานการทางพิเศษแห่งประเทศไทย<br>
+      วันเวลาที่สอบถามข้อมูล <%= printedAt %>
+    </div>
+  </div>
+</div>
+
+<style>
+  body { background: #f5f6f8; }
+  .print-sheet { background: #fff; }
+  @media print {
+    body { background: #fff !important; }
+    .no-print, .navbar, .sidebar, #sidebar-wrapper, #page-content-wrapper > nav { display: none !important; }
+    .container, .content-inner, main { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+    .print-page { max-width: none !important; }
+    .print-sheet { border: 0 !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; }
+  }
+</style>

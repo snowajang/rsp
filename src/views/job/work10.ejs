@@ -41,7 +41,7 @@
                 inputmode="numeric"
                 autocomplete="off"
                 placeholder="กรอกเลขประจำตัวประชาชน 13 หลัก"
-                value="<%= model?.personalId || '' %>"
+                value="<%= model?.personalID || model?.personalId || '' %>"
               >
             </div>
             <div class="form-text">รองรับเฉพาะตัวเลข 13 หลัก เพื่อค้นหาข้อมูลบุคคลและข้อมูลที่อยู่</div>
@@ -52,9 +52,14 @@
               <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm">
                 <i class="bi bi-search me-2"></i>ค้นหาข้อมูล
               </button>
-              <a href="/job/work1" class="btn btn-light btn-lg px-4 border">
+              <a href="<%= routeBase %>" class="btn btn-light btn-lg px-4 border">
                 <i class="bi bi-arrow-clockwise me-2"></i>ล้างค่า
               </a>
+              <% if (model && !model.error && model.personalID) { %>
+                <a href="<%= routeBase %>/print?pid=<%= encodeURIComponent(model.personalID) %>" target="_blank" class="btn btn-outline-dark btn-lg px-4 border">
+                  <i class="bi bi-printer me-2"></i>พิมพ์ข้อมูล
+                </a>
+              <% } %>
             </div>
           </div>
         </form>
