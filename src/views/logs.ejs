@@ -1,0 +1,286 @@
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4 px-2">
+  <div>
+    <h3 class="mb-1">Log Management</h3>
+    <div class="text-muted">ค้นหา กรอง และตรวจสอบรายละเอียด Audit Log และ API Log จากหน้าเดียว</div>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="/logs?type=audit" class="btn <%= activeType === 'audit' ? 'btn-primary' : 'btn-outline-primary' %>">
+      <i class="bi bi-journal-text me-1"></i> Audit Log
+    </a>
+    <a href="/logs?type=api" class="btn <%= activeType === 'api' ? 'btn-primary' : 'btn-outline-primary' %>">
+      <i class="bi bi-hdd-network me-1"></i> API Log
+    </a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="small text-uppercase text-muted mb-1">Audit ทั้งหมด</div>
+        <div class="display-6 fw-semibold"><%= Number(summary.auditTotal || 0).toLocaleString('th-TH') %></div>
+        <div class="small text-muted">ย้อนหลัง 24 ชม. <%= Number(summary.recentAudit || 0).toLocaleString('th-TH') %> รายการ</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="small text-uppercase text-muted mb-1">API ทั้งหมด</div>
+        <div class="display-6 fw-semibold"><%= Number(summary.apiTotal || 0).toLocaleString('th-TH') %></div>
+        <div class="small text-muted">ย้อนหลัง 24 ชม. <%= Number(summary.recentApi || 0).toLocaleString('th-TH') %> รายการ</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="small text-uppercase text-muted mb-1">กำลังแสดง</div>
+        <div class="fs-3 fw-semibold"><%= activeType === 'audit' ? 'Audit Log' : 'API Log' %></div>
+        <div class="small text-muted">หน้า <%= pagination.page %> / <%= pagination.totalPages %></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="small text-uppercase text-muted mb-1">ผลลัพธ์ที่พบ</div>
+        <div class="display-6 fw-semibold"><%= Number(pagination.totalItems || 0).toLocaleString('th-TH') %></div>
+        <div class="small text-muted">ตามเงื่อนไขที่เลือก</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <strong><i class="bi bi-funnel me-2 text-primary"></i>ตัวกรองข้อมูล</strong>
+  </div>
+  <div class="card-body">
+    <form method="get" action="/logs" class="row g-3 align-items-end">
+      <input type="hidden" name="type" value="<%= activeType %>">
+
+      <div class="col-lg-3">
+        <label class="form-label">ค้นหา</label>
+        <input type="text" name="search" class="form-control" value="<%= filters.search || '' %>" placeholder="คำค้นหา action, endpoint, details, ip">
+      </div>
+
+      <div class="col-lg-2">
+        <label class="form-label">User ID</label>
+        <input type="text" name="userId" class="form-control" value="<%= filters.userId || '' %>" placeholder="PID / User ID">
+      </div>
+
+      <% if (activeType === 'audit') { %>
+        <div class="col-lg-2">
+          <label class="form-label">Action</label>
+          <select name="action" class="form-select">
+            <option value="">ทั้งหมด</option>
+            <% actionOptions.forEach((action) => { %>
+              <option value="<%= action %>" <%= filters.action === action ? 'selected' : '' %>><%= action %></option>
+            <% }) %>
+          </select>
+        </div>
+      <% } else { %>
+        <div class="col-lg-2">
+          <label class="form-label">Method</label>
+          <select name="method" class="form-select">
+            <option value="">ทั้งหมด</option>
+            <% methodOptions.forEach((method) => { %>
+              <option value="<%= method %>" <%= filters.method === method ? 'selected' : '' %>><%= method %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="col-lg-2">
+          <label class="form-label">API Status</label>
+          <select name="apiStatus" class="form-select">
+            <option value="all" <%= filters.apiStatus === 'all' ? 'selected' : '' %>>ทั้งหมด</option>
+            <option value="success" <%= filters.apiStatus === 'success' ? 'selected' : '' %>>Success</option>
+            <option value="error" <%= filters.apiStatus === 'error' ? 'selected' : '' %>>Error</option>
+          </select>
+        </div>
+
+        <div class="col-lg-3">
+          <label class="form-label">Endpoint</label>
+          <input type="text" name="endpoint" class="form-control" value="<%= filters.endpoint || '' %>" placeholder="เช่น /api/linkage/login">
+        </div>
+      <% } %>
+
+      <div class="col-lg-2">
+        <label class="form-label">วันที่เริ่ม</label>
+        <input type="date" name="startDate" class="form-control" value="<%= filters.startDate || '' %>">
+      </div>
+
+      <div class="col-lg-2">
+        <label class="form-label">วันที่สิ้นสุด</label>
+        <input type="date" name="endDate" class="form-control" value="<%= filters.endDate || '' %>">
+      </div>
+
+      <div class="col-lg-2">
+        <label class="form-label">จำนวนต่อหน้า</label>
+        <select name="pageSize" class="form-select">
+          <option value="10" <%= pagination.pageSize === 10 ? 'selected' : '' %>>10</option>
+          <option value="20" <%= pagination.pageSize === 20 ? 'selected' : '' %>>20</option>
+          <option value="30" <%= pagination.pageSize === 30 ? 'selected' : '' %>>30</option>
+          <option value="50" <%= pagination.pageSize === 50 ? 'selected' : '' %>>50</option>
+        </select>
+      </div>
+
+      <div class="col-lg-12 d-flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>ค้นหา</button>
+        <a href="/logs?type=<%= activeType %>" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise me-1"></i>ล้างตัวกรอง</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center gap-2 flex-wrap">
+    <strong>
+      <i class="bi <%= activeType === 'audit' ? 'bi-journal-text' : 'bi-hdd-network' %> me-2 text-primary"></i>
+      <%= activeType === 'audit' ? 'รายการ Audit Log' : 'รายการ API Log' %>
+    </strong>
+    <div class="small text-muted">รวม <%= Number(pagination.totalItems || 0).toLocaleString('th-TH') %> รายการ</div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <% if (activeType === 'audit') { %>
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 80px;">#</th>
+              <th style="width: 180px;">วันเวลา</th>
+              <th style="width: 160px;">User ID</th>
+              <th style="width: 220px;">Action</th>
+              <th>Details</th>
+              <th class="text-end" style="width: 150px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (auditLogs.length) { %>
+              <% auditLogs.forEach((log, idx) => { %>
+                <tr>
+                  <td><%= ((pagination.page - 1) * pagination.pageSize) + idx + 1 %></td>
+                  <td class="small text-muted"><%= new Date(log.createdAt).toLocaleString('th-TH') %></td>
+                  <td><span class="badge text-bg-light border"><%= log.useridText %></span></td>
+                  <td><span class="fw-semibold"><%= log.action %></span></td>
+                  <td>
+                    <div class="text-break"><%= log.details %></div>
+                  </td>
+                  <td class="text-end">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary btn-log-detail"
+                      data-bs-toggle="modal"
+                      data-bs-target="#logDetailModal"
+                      data-log-type="Audit Log"
+                      data-log-title="<%= log.action %>"
+                      data-log-json="<%= encodeURIComponent(log.modalJson) %>">
+                      <i class="bi bi-eye"></i> ดูรายละเอียด
+                    </button>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" class="text-center py-5 text-muted">ไม่พบ Audit Log ตามเงื่อนไขที่เลือก</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 70px;">#</th>
+              <th style="width: 180px;">วันเวลา</th>
+              <th style="width: 100px;">Method</th>
+              <th>Endpoint</th>
+              <th style="width: 140px;">Status</th>
+              <th style="width: 180px;">IP / User</th>
+              <th class="text-end" style="width: 150px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (apiLogs.length) { %>
+              <% apiLogs.forEach((log, idx) => { %>
+                <tr>
+                  <td><%= ((pagination.page - 1) * pagination.pageSize) + idx + 1 %></td>
+                  <td class="small text-muted"><%= new Date(log.createdAt).toLocaleString('th-TH') %></td>
+                  <td><span class="badge text-bg-primary"><%= log.method %></span></td>
+                  <td>
+                    <div class="fw-semibold text-break"><%= log.endpoint %></div>
+                    <div class="small text-muted text-break"><%= log.details || '-' %></div>
+                  </td>
+                  <td>
+                    <% const statusCode = Number(log.resStatus || 0); %>
+                    <% const badgeClass = statusCode >= 400 || Number(log.status || 0) !== 0 ? 'text-bg-danger' : (statusCode >= 200 && statusCode < 400 ? 'text-bg-success' : 'text-bg-secondary'); %>
+                    <span class="badge <%= badgeClass %>"><%= log.resStatus ?? '-' %></span>
+                  </td>
+                  <td>
+                    <div class="small text-break"><%= log.ipaddress || '-' %></div>
+                    <div class="small text-muted">User: <%= log.useridText %></div>
+                  </td>
+                  <td class="text-end">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary btn-log-detail"
+                      data-bs-toggle="modal"
+                      data-bs-target="#logDetailModal"
+                      data-log-type="API Log"
+                      data-log-title="<%= `${log.method} ${log.endpoint}` %>"
+                      data-log-json="<%= encodeURIComponent(log.modalJson) %>">
+                      <i class="bi bi-eye"></i> ดูรายละเอียด
+                    </button>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="7" class="text-center py-5 text-muted">ไม่พบ API Log ตามเงื่อนไขที่เลือก</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  </div>
+  <div class="card-footer bg-white d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+    <div class="small text-muted">ใช้สำหรับติดตามการใช้งาน ตรวจสอบย้อนหลัง และวิเคราะห์ปัญหา</div>
+    <div class="btn-group">
+      <a class="btn btn-sm btn-outline-secondary <%= pagination.hasPrev ? '' : 'disabled' %>" href="<%= pagination.hasPrev ? pagination.prevUrl : '#' %>">ก่อนหน้า</a>
+      <a class="btn btn-sm btn-outline-secondary disabled" href="#">หน้า <%= pagination.page %> / <%= pagination.totalPages %></a>
+      <a class="btn btn-sm btn-outline-secondary <%= pagination.hasNext ? '' : 'disabled' %>" href="<%= pagination.hasNext ? pagination.nextUrl : '#' %>">ถัดไป</a>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="logDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-1"><i class="bi bi-file-earmark-code me-2 text-primary"></i><span id="logDetailType">รายละเอียด Log</span></h5>
+          <div class="small text-muted" id="logDetailTitle">-</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body bg-light-subtle">
+        <pre id="logDetailJson" class="mb-0 p-3 bg-dark text-light rounded-3 small" style="min-height: 420px; white-space: pre-wrap;"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.btn-log-detail').forEach((button) => {
+    button.addEventListener('click', () => {
+      const type = button.getAttribute('data-log-type') || 'Log';
+      const title = button.getAttribute('data-log-title') || '-';
+      const json = decodeURIComponent(button.getAttribute('data-log-json') || '%7B%7D');
+      document.getElementById('logDetailType').textContent = type;
+      document.getElementById('logDetailTitle').textContent = title;
+      document.getElementById('logDetailJson').textContent = json;
+    });
+  });
+</script>

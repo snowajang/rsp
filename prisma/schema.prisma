@@ -14,9 +14,11 @@ model member {
   passwordHash  String   @db.VarChar(255)
   role          String   @default("user") @db.VarChar(50)
   isActive      Boolean  @default(true)
+  isDeleted     Boolean  @default(false)
   token         String   @default("") @db.VarChar(255)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  deletedAt     DateTime @updatedAt
   lastLogin     DateTime?
 }
 
@@ -48,6 +50,10 @@ model applog {
   details       String   @db.Text
   createdAt     DateTime @default(now())
   status        Int      @default(0)
+
+  @@index([createdAt])
+  @@index([userid])
+  @@index([status])
 }
 
 model userlog {
@@ -56,4 +62,7 @@ model userlog {
   action        String   @db.Text
   details       String   @db.Text
   createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userid])
 }

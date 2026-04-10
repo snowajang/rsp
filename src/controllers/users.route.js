@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { ensureAuth } from '../middlewares/auth.js';
+import { recordUserAction } from '../lib/audit.js';
 
 const router = Router();
 const allowedRoles = new Set(['admin', 'user', 'dev']);
@@ -47,14 +48,14 @@ function parsePid(value) {
 
 function buildWhere(search) {
   const keyword = safeTrim(search);
-  if (!keyword) return {};
-  return {
-    OR: [
-      { name: { contains: keyword } },
-      { email: { contains: keyword } },
-      { username: { contains: keyword } }
-    ]
-  };
+  const where = { isDeleted: false };
+  if (!keyword) return where;
+  where.OR = [
+    { name: { contains: keyword } },
+    { email: { contains: keyword } },
+    { username: { contains: keyword } }
+  ];
+  return where;
 }
 
 router.get('/', ensureAuth, async (req, res, next) => {
@@ -145,6 +146,7 @@ router.post('/', ensureAuth, async (req, res, next) => {
     await req.prisma.member.create({
       data: { pid, username, name, email, role, isActive, passwordHash }
     });
+    await recordUserAction(req, 'user-create', 'เพิ่มผู้ใช้งาน', { pid, username, name, email, role, isActive });
 
     return res.redirect(buildUsersQuery(1, normalizePageSize(toInt(req.body.pageSize, 10)), safeTrim(req.body.search)) + '&status=success&message=' + encodeURIComponent('เพิ่มผู้ใช้งานเรียบร้อยแล้ว'));
   } catch (err) {
@@ -194,6 +196,7 @@ router.post('/:id/update', ensureAuth, async (req, res, next) => {
       return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=danger&message=' + encodeURIComponent('username หรือ email ซ้ำในระบบ'));
     }
 
+    const currentUser = await req.prisma.member.findUnique({ where: { pid } });
     const data = { username, name, email, role, isActive };
     if (password) {
       if (password.length < 6) {
@@ -203,6 +206,7 @@ router.post('/:id/update', ensureAuth, async (req, res, next) => {
     }
 
     await req.prisma.member.update({ where: { pid }, data });
+    await recordUserAction(req, 'user-update', 'แก้ไขข้อมูลผู้ใช้งาน', { pid, before: currentUser, after: { pid, ...data } });
     return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=success&message=' + encodeURIComponent('แก้ไขข้อมูลผู้ใช้งานเรียบร้อยแล้ว'));
   } catch (err) {
     if (err?.code === 'P2002') {
@@ -236,6 +240,7 @@ router.post('/:id/toggle-status', ensureAuth, async (req, res, next) => {
       where: { pid },
       data: { isActive: !user.isActive }
     });
+    await recordUserAction(req, user.isActive ? 'user-suspend' : 'user-activate', user.isActive ? 'ระงับผู้ใช้งาน' : 'เปิดใช้งานผู้ใช้งาน', { pid, username: user.username, from: user.isActive, to: !user.isActive });
 
     const message = user.isActive ? 'ระงับการใช้งานเรียบร้อยแล้ว' : 'เปิดใช้งานบัญชีเรียบร้อยแล้ว';
     return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=success&message=' + encodeURIComponent(message));
@@ -259,7 +264,9 @@ router.post('/:id/delete', ensureAuth, async (req, res, next) => {
       return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=warning&message=' + encodeURIComponent('ไม่สามารถลบบัญชีที่กำลังใช้งานอยู่ได้'));
     }
 
-    await req.prisma.member.delete({ where: { pid } });
+    const user = await req.prisma.member.findUnique({ where: { pid } });
+    await req.prisma.member.update({ where: { pid }, data: { isDeleted: true, deletedAt: new Date(), isActive: false } });
+    await recordUserAction(req, 'user-delete', 'ลบผู้ใช้งาน', { pid, username: user?.username, name: user?.name, email: user?.email });
     return res.redirect(buildUsersQuery(page, pageSize, search) + '&status=success&message=' + encodeURIComponent('ลบผู้ใช้งานเรียบร้อยแล้ว'));
   } catch (err) {
     next(err);

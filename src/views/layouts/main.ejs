@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="/css/layout.css?v=2">
 </head>
 <body>
-<div id="wrapper" class="toggled">
+<div id="wrapper">
   <%- include('../partials/sidebar', { currentPath }) %>
 
   <div id="page-content-wrapper">
@@ -70,11 +70,30 @@
 <script>
   const wrapper = document.getElementById('wrapper');
   const menuToggle = document.getElementById('menu-toggle');
+  const sidebar = document.getElementById('sidebar-wrapper');
+  const mobileMq = window.matchMedia('(max-width: 991.98px)');
+
+  function syncSidebarState() {
+    if (!wrapper) return;
+    const isOpen = wrapper.classList.contains('toggled');
+    document.body.classList.toggle('sidebar-open', mobileMq.matches && isOpen);
+  }
 
   if (menuToggle && wrapper) {
     menuToggle.addEventListener('click', () => {
       wrapper.classList.toggle('toggled');
+      syncSidebarState();
     });
+
+    document.addEventListener('click', (event) => {
+      if (!mobileMq.matches || !wrapper.classList.contains('toggled')) return;
+      if (sidebar?.contains(event.target) || menuToggle.contains(event.target)) return;
+      wrapper.classList.remove('toggled');
+      syncSidebarState();
+    });
+
+    window.addEventListener('resize', syncSidebarState);
+    syncSidebarState();
   }
 </script>
 <script src="/js/smartcard.js"></script>

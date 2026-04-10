@@ -1,8 +1,5 @@
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4 px-2">
-  <div class="alert alert-info">
-    ข้อมูลบัตรประจำตัวประชาชน
-  </div>
-
+<div class="d-flex flex-column flex-lg-row justify-content-center align-items-center gap-3 mb-4 px-2">
+  
   <div class="card shadow-sm border-0">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
       <strong>ข้อมูลบัตรประจำตัวประชาชน</strong>
@@ -11,10 +8,17 @@
 
     <div class="card-body">
       <div id="runsmc" class="mb-3"></div>
-
+      <!-- <div id="errordiv" class="alert alert-info"> -->
+        
+      </div>
       <form method="post">
         <div class="row g-3">
           <div class="col-lg-9">
+            <input id="xdob" type="hidden" />
+            <input id="cid" type="hidden" />
+            <input id="bp1" type="hidden" />
+            <input id="laser" type="hidden" />
+
             <table class="table table-hover">
               <tbody>
                 <tr>
@@ -77,21 +81,23 @@
             </table>
           </div>
 
-          <div class="col-lg-3 text-center">
+          <div id="showimagenx" class="col-lg-3 text-center">
             <% if (smc && smc.image) { %>
-              <img id="vimg" src="<%= smc.image %>" width="140" height="160" class="rounded" alt="photo" />
+              <img id="vimg" src="<%= smc?.image || 'images/avatar-999.svg' %>" width="140" height="160" class="rounded" alt="photo" />
             <% } else { %>
               <div class="border rounded d-flex align-items-center justify-content-center" style="width:140px;height:160px;margin:0 auto;">
-                <span class="text-muted small">ไม่มีรูป</span>
+                <!-- <span class="text-muted small">ไม่มีรูป</span> -->
+                <img id="vimg" src="<%= smc?.image || 'images/avatar-999.svg' %>" width="140" height="160" class="rounded" alt="photo" />
               </div>
             <% } %>
             <input id="ximg" name="image" type="hidden" value="<%= smc?.image || '' %>" />
             <input id="xnimage" name="nimage" type="hidden" value="<%= smc?.nimage || '' %>" />
-
-            <div id="cerpop" class="text-center h6 mt-3"></div>
           </div>
+
+          <div id="cerpop" class="text-center h6 mt-3"></div>
         </div>
       </form>
     </div>
   </div>
 </div>
+<input id="pop" type="hidden" value='<%= JSON.stringify(smc || {}) %>' />

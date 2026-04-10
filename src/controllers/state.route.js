@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ensureAuth } from '../middlewares/auth.js';
+import { recordUserAction } from '../lib/audit.js';
 
 const router = Router();
 
@@ -259,6 +260,7 @@ router.post('/', ensureAuth, async (req, res, next) => {
         deletedAt: null,
       },
     });
+    await recordUserAction(req, 'thaid-create', 'เพิ่มข้อมูลแอป ThaiD', { istate, returnurl, userpid, isActive, scopes: selectedScopes });
 
     return res.redirect(buildRedirect(1, pageSize, search, statusFilter, 'success', `เพิ่มรายการ ThaiD state ${istate} สำเร็จ`));
   } catch (err) {
@@ -342,6 +344,7 @@ router.post('/:istate/update', ensureAuth, async (req, res, next) => {
       });
     }
 
+    await recordUserAction(req, 'thaid-update', 'แก้ไขข้อมูลแอป ThaiD', { currentState, nextState, before: existing, after: { istate: nextState, returnurl, userpid, isActive, scopes: selectedScopes } });
     return res.redirect(buildRedirect(page, pageSize, search, statusFilter, 'success', `บันทึกข้อมูล state ${nextState} สำเร็จ`));
   } catch (err) {
     next(err);
@@ -370,6 +373,7 @@ router.post('/:istate/toggle-status', ensureAuth, async (req, res, next) => {
       where: { istate_termdate: { istate, termdate: 0 } },
       data: { isActive: !record.isActive },
     });
+    await recordUserAction(req, record.isActive ? 'thaid-suspend' : 'thaid-activate', record.isActive ? 'ระงับแอป ThaiD' : 'เปิดใช้งานแอป ThaiD', { istate, from: record.isActive, to: !record.isActive });
 
     return res.redirect(buildRedirect(page, pageSize, search, statusFilter, 'success', `${record.isActive ? 'ระงับ' : 'เปิดใช้งาน'} state ${istate} สำเร็จ`));
   } catch (err) {
@@ -400,6 +404,7 @@ router.post('/:istate/delete', ensureAuth, async (req, res, next) => {
         deletedAt: new Date(),
       },
     });
+    await recordUserAction(req, 'thaid-delete', 'ลบแอป ThaiD', { istate, returnurl: record.returnurl, userpid: record.userpid });
 
     return res.redirect(buildRedirect(page, pageSize, search, statusFilter, 'success', `ย้าย state ${istate} ไปยังรายการที่ถูกลบแล้ว`));
   } catch (err) {
@@ -430,6 +435,7 @@ router.post('/:istate/restore', ensureAuth, async (req, res, next) => {
         deletedAt: null,
       },
     });
+    await recordUserAction(req, 'thaid-restore', 'กู้คืนแอป ThaiD', { istate });
 
     return res.redirect(buildRedirect(page, pageSize, search, statusFilter, 'success', `คืนค่า state ${istate} สำเร็จ`));
   } catch (err) {

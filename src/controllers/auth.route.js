@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ensureGuest } from '../middlewares/auth.js';
 import bcrypt from 'bcryptjs';
+import { recordUserAction } from '../lib/audit.js';
 
 const router = Router();
 
@@ -21,13 +22,21 @@ router.post('/login', ensureGuest, async (req, res, next) => {
             });
         }
 
-        const user = await req.prisma.member.findUnique({ where: { username } });
+        const user = await req.prisma.member.findFirst({ where: { username, isDeleted: false } });
         if (!user) {
             return res.status(401).render('auth/login', {
                 title: 'Login',
                 error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
                 layout: false
             }); 
+        }
+
+        if (user.isDeleted) {
+            return res.status(403).render('auth/login', {
+                title: 'Login',
+                error: 'บัญชีผู้ใช้นี้ถูกยกเลิกการใช้งาน',
+                layout: false
+            });
         }
 
         if (!user.isActive) {
@@ -59,6 +68,7 @@ router.post('/login', ensureGuest, async (req, res, next) => {
             isActive: user.isActive
         };
 
+        await recordUserAction(req, 'login', 'เข้าสู่ระบบด้วย username/password สำเร็จ', { username: user.username, role: user.role });
         res.redirect('/');
     } catch (err) {
         console.log(err);
@@ -110,7 +120,7 @@ router.post('/thaid', ensureGuest, async (req, res, next) => {
                         pid: pidNumber,
                         name,
                         email: 'admin@console.com',
-                        username: 'preuser',
+                        username: 'preuser'+pid,
                         token: itoken.data.token,
                         role: 'user',
                         passwordHash: ''
@@ -145,6 +155,7 @@ router.post('/thaid', ensureGuest, async (req, res, next) => {
                 lk: itoken.data.token,
                 role: user.role
             };
+            await recordUserAction(req, 'login-thaid', 'เข้าสู่ระบบด้วย ThaiD สำเร็จ', { pid, name, role: user.role });
             res.redirect('/');
         } else {
             res.render('auth/login', { title: 'Login', error: `${pid} ${name}`, layout: false });
@@ -156,14 +167,78 @@ router.post('/thaid', ensureGuest, async (req, res, next) => {
 
 router.post('/thaidlogin', ensureGuest, async (req, res, next) => {
     try {
-        // res.redirect('https://web-app.bora.dopa.go.th/thaid3/auth?state=thaidlogin');
-        res.redirect('/vthaid/auth?state=webapp');
+        res.redirect('https://web-app.bora.dopa.go.th/thaid3/auth?state=thaidlogin');
+        // res.redirect('/vthaid/auth?state=webapp');
     } catch (err) {
         next(err);
     }
 });
 
-router.post('/logout', (req, res) => {
+
+router.post('/smclogin', ensureGuest, async (req, res, next) => {
+    try {
+        let { token, pid, name } = req.body;
+        if (!token || !pid || !name) {
+            console.log('SMC LOGIN PAYLOAD body:', req.body);
+            return res.status(400).render('auth/login', {
+                title: 'Login',
+                error: 'ข้อมูลไม่ครบถ้วน',
+                layout: false
+            });
+        }
+        let user = await req.prisma.member.findUnique({
+            where: { pid: Number(pid) }
+        });
+        if (!user) {
+            user = await req.prisma.member.create({
+                data: {
+                    pid: Number(pid),
+                    name,
+                        email: 'admin@console.com',
+                        username: 'preuser'+pid,
+                        token: token,
+                        role: 'user',
+                        passwordHash: ''
+                }
+            });
+        } else {
+            user = await req.prisma.member.update({
+                where: { pid: Number(pid) },
+                data: {
+                    name,
+                    token
+                }
+            });
+        }
+            
+        let rs = await fetch(`http://localhost:3000/api/linkage/user`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+        });
+        let job = null;
+        if (!rs.ok) {
+            console.log('SMC LOGIN USER API ERROR:', rs.status, await rs.text());
+            job = {};
+        } else {
+            let userinfo = await rs.json();
+            console.log('SMC LOGIN USER API SUCCESS:', userinfo);
+            job = userinfo?.data?.job || {};
+        }
+        req.session.user = {
+            id: pid,
+            name: name,
+            lk: token,
+            role: user.role
+        };
+        await recordUserAction(req, 'login-smc', 'เข้าสู่ระบบด้วย smc สำเร็จ', { pid, name, role: user.role });
+        res.redirect('/');
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/logout', async (req, res) => {
+    await recordUserAction(req, 'logout', 'ออกจากระบบ', { currentUser: req.session?.user?.name || null });
     req.session.destroy(() => {
         res.redirect('/auth/login');
     });

@@ -1,63 +1,261 @@
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4 px-2">
-  
-  <div class="row g-3 mb-4 w-100 align-items-stretch">
-    <div class="col-lg-4 col-md-6 d-flex">
-      <div class="card shadow-sm border-0 mb-3 w-100 h-100">
-        <div class="card-header bg-white">
-          <strong>Total Users</strong>
-        </div>
-        <div class="card-body">
-          <h3 class="card-title"><%= (metrics && metrics.userCount) ? metrics.userCount : 0 %></h3>
-        </div>
-      </div>
+<%
+  const __metrics = typeof metrics !== 'undefined' && metrics ? metrics : {};
+  const __latestUsers = typeof latestUsers !== 'undefined' && Array.isArray(latestUsers) ? latestUsers : [];
+  const __recentApiLogs = typeof recentApiLogs !== 'undefined' && Array.isArray(recentApiLogs) ? recentApiLogs : [];
+%>
+<div class="container-fluid px-2 px-lg-3">
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+    <div>
+      <h4 class="mb-1">Dashboard Overview</h4>
+      <p class="text-muted mb-0">สรุปภาพรวมผู้ใช้งาน แอป ThaiD และสถิติ API ตาม HTTP Status</p>
     </div>
-    <div class="col-lg-4 col-md-6 d-flex">
-      <div class="card shadow-sm border-0 mb-3 w-100 h-100">
-        <div class="card-header bg-white">
-          <strong>System Info</strong>
+    <div class="text-muted small">
+      Node Version: <code><%= process.version %></code>
+      &nbsp;|&nbsp;
+      Env: <code><%= process.env.NODE_ENV || 'development' %></code>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-xl-4 d-flex">
+      <div class="card shadow-sm border-0 w-100 h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <strong>User Summary</strong>
+          <span class="badge text-bg-primary">รวม <%= __metrics?.users?.total || 0 %></span>
         </div>
         <div class="card-body">
-          <p class="mb-1">Node Version: <code><%= process.version %></code></p>
-          <p class="mb-1">Env: <code><%= process.env.NODE_ENV || 'development' %></code></p>
-          <p class="mb-0 text-muted small">Admin dashboard</p>
+          <div class="row g-3">
+            <div class="col-4">
+              <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                <div class="text-muted small mb-1">ปกติ</div>
+                <div class="fs-4 fw-semibold text-success"><%= __metrics?.users?.active || 0 %></div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                <div class="text-muted small mb-1">ระงับ</div>
+                <div class="fs-4 fw-semibold text-warning"><%= __metrics?.users?.suspended || 0 %></div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                <div class="text-muted small mb-1">ยกเลิก</div>
+                <div class="fs-4 fw-semibold text-danger"><%= (__metrics?.users?.deleted ?? "-") %></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="col-lg-4 d-flex">
-      <div class="card shadow-sm border-0 mb-3 w-100 h-100">
+    <div class="col-12 col-xl-4 d-flex">
+      <div class="card shadow-sm border-0 w-100 h-100">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
-          <strong>Latest Users</strong>
-          <span class="text-muted small">ล่าสุด 10 รายการ</span>
+          <strong>ThaiD Summary</strong>
+          <span class="badge text-bg-info">รวม <%= __metrics?.thaid?.total || 0 %></span>
         </div>
-        <div class="card-body p-0">
-          <table class="table table-hover mb-0 align-middle">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th style="width:120px;">Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (latestUsers && latestUsers.length) { %>
-                <% latestUsers.forEach((u) => { %>
-                  <tr>
-                    <td><%= u.name || '' %></td>
-                    <td><%= u.email || '' %></td>
-                    <td>
-                      <span class="badge bg-<%= (u.role === 'admin' ? 'danger' : 'secondary') %>"><%= u.role || '' %></span>
-                    </td>
-                  </tr>
-                <% }) %>
-              <% } else { %>
-                <tr><td colspan="3" class="text-center py-3">ไม่มีข้อมูล</td></tr>
-              <% } %>
-            </tbody>
-          </table>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-4">
+              <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                <div class="text-muted small mb-1">ปกติ</div>
+                <div class="fs-4 fw-semibold text-success"><%= __metrics?.thaid?.active || 0 %></div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                <div class="text-muted small mb-1">ระงับ</div>
+                <div class="fs-4 fw-semibold text-warning"><%= __metrics?.thaid?.suspended || 0 %></div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                <div class="text-muted small mb-1">ยกเลิก</div>
+                <div class="fs-4 fw-semibold text-danger"><%= __metrics?.thaid?.deleted || 0 %></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-4 d-flex">
+      <div class="card shadow-sm border-0 w-100 h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <strong>API Summary</strong>
+          <span class="badge text-bg-dark">รวม <%= __metrics?.api?.total || 0 %></span>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-6 col-md-3 col-xl-6">
+              <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                <div class="text-muted small mb-1">2xx</div>
+                <div class="fs-4 fw-semibold text-success"><%= __metrics?.api?.byClass?.s2xx || 0 %></div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-6">
+              <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                <div class="text-muted small mb-1">3xx</div>
+                <div class="fs-4 fw-semibold text-info"><%= __metrics?.api?.byClass?.s3xx || 0 %></div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-6">
+              <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                <div class="text-muted small mb-1">4xx</div>
+                <div class="fs-4 fw-semibold text-warning"><%= __metrics?.api?.byClass?.s4xx || 0 %></div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-6">
+              <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                <div class="text-muted small mb-1">5xx</div>
+                <div class="fs-4 fw-semibold text-danger"><%= __metrics?.api?.byClass?.s5xx || 0 %></div>
+              </div>
+            </div>
+          </div>
+          <% if ((__metrics?.api?.byClass?.other || 0) > 0) { %>
+            <div class="mt-3 small text-muted">สถานะอื่น ๆ: <strong><%= __metrics.api.byClass.other %></strong></div>
+          <% } %>
         </div>
       </div>
     </div>
   </div>
 
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-xl-6 d-flex">
+      <div class="card shadow-sm border-0 w-100 h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <strong>Latest Users</strong>
+          <span class="text-muted small">ล่าสุด 10 รายการ</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (__latestUsers.length) { %>
+                  <% __latestUsers.forEach((u) => { %>
+                    <tr>
+                      <td><%= u.name || '' %></td>
+                      <td><%= u.email || '' %></td>
+                      <td>
+                        <span class="badge bg-<%= (u.role === 'admin' ? 'danger' : 'secondary') %>"><%= u.role || '' %></span>
+                      </td>
+                      <td>
+                        <% if (u.isActive) { %>
+                          <span class="badge text-bg-success">ปกติ</span>
+                        <% } else { %>
+                          <span class="badge text-bg-warning">ระงับ</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+
+                <% } else { %>
+                  <tr><td colspan="4" class="text-center py-3">ไม่มีข้อมูล</td></tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-6 d-flex">
+      <div class="card shadow-sm border-0 w-100 h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <strong>API Status Detail</strong>
+          <span class="text-muted small">แยกตาม HTTP Status</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th style="width: 140px;">HTTP Status</th>
+                  <th>Category</th>
+                  <th class="text-end" style="width: 140px;">Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (__metrics?.api?.byStatus && __metrics.api.byStatus.length) { %>
+                  <% __metrics.api.byStatus.forEach((row) => { %>
+                    <% let category = 'Other'; let badgeClass = 'secondary'; %>
+                    <% if (row.status >= 200 && row.status <= 299) { category = 'Success'; badgeClass = 'success'; %>
+                    <% } else if (row.status >= 300 && row.status <= 399) { category = 'Redirect'; badgeClass = 'info'; %>
+                    <% } else if (row.status >= 400 && row.status <= 499) { category = 'Client Error'; badgeClass = 'warning';  %>
+                    <% } else if (row.status >= 500 && row.status <= 599) { category = 'Server Error'; badgeClass = 'danger'; } %>
+                    <tr>
+                      <td><code><%= row.status %></code></td>
+                      <td><span class="badge text-bg-<%= badgeClass %>"><%= category %></span></td>
+                      <td class="text-end fw-semibold"><%= row.count %></td>
+                    </tr>
+                  <% }) %>
+
+                <% } else { %>
+                  <tr><td colspan="3" class="text-center py-3">ยังไม่มีข้อมูล API log</td></tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <strong>Recent API Logs</strong>
+          <span class="text-muted small">ล่าสุด 10 รายการ</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Method</th>
+                  <th>Endpoint</th>
+                  <th>HTTP Status</th>
+                  <th>IP Address</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (__recentApiLogs.length) { %>
+                  <% __recentApiLogs.forEach((log) => { %>
+                    <tr>
+                      <td><%= log.createdAt ? new Date(log.createdAt).toLocaleString('th-TH') : '-' %></td>
+                      <td><code><%= log.method || '-' %></code></td>
+                      <td class="text-break"><%= log.endpoint || '-' %></td>
+                      <td>
+                        <% const statusCode = Number(log.resStatus || 0); %>
+                        <% let statusClass = 'secondary'; %>
+                        <% if (statusCode >= 200 && statusCode <= 299) { statusClass = 'success'; %>
+                        <% } else if (statusCode >= 300 && statusCode <= 399) { statusClass = 'info'; %>
+                        <% } else if (statusCode >= 400 && statusCode <= 499) { statusClass = 'warning'; %>
+                        <% } else if (statusCode >= 500) { statusClass = 'danger'; } %>
+                        <span class="badge text-bg-<%= statusClass %>"><%= log.resStatus ?? '-' %></span>
+                      </td>
+                      <td><%= log.ipaddress || '-' %></td>
+                    </tr>
+                  <% }) %>
+                  
+                <% } else { %>
+                  <tr><td colspan="5" class="text-center py-3">ยังไม่มีข้อมูล</td></tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

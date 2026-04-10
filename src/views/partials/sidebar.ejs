@@ -19,6 +19,7 @@
   const isJobWork9 = path.startsWith('/job/work9');
   const isJobWork10 = path.startsWith('/job/work10');
   const isDocs = path.startsWith('/docs');
+  const isLogs = path.startsWith('/logs');
 %>
 
 <div id="sidebar-wrapper" class="d-flex flex-column">
@@ -48,30 +49,21 @@
       <span>ไทยดี</span>
     </a>
     <% } %>
+    <a href="/logs" class="list-group-item list-group-item-action <%= isLogs ? 'active' : '' %>">
+      <i class="bi bi-journal-richtext"></i>
+      <span>Log Management</span>
+    </a>
     <!-- Docs -->
     <a href="/docs" target="_blank" class="list-group-item list-group-item-action <%= isDocs ? 'active' : '' %>">
       <i class="bi bi-braces-asterisk"></i>
       <span>API</span>
     </a>
 
-    <!-- Smartcard section with submenu -->
-    <div class="list-group-item list-group-item-action sidebar-parent <%= isSmartcardSection ? 'active-parent' : '' %>">
-      <div class="d-flex align-items-center justify-content-between sidebar-parent-toggle" data-bs-toggle="collapse" data-bs-target="#smartcardSubmenu" aria-expanded="<%= isSmartcardSection ? 'true' : 'false' %>">
-        <div class="d-flex align-items-center gap-2">
-          <i class="bi bi-credit-card-2-front"></i>
-          <span>ระบบบัตรประชาชน</span>
-        </div>
-        <i class="bi bi-chevron-right small sidebar-parent-arrow <%= isSmartcardSection ? 'rotate' : '' %>"></i>
-      </div>
-      <div id="smartcardSubmenu" class="collapse sidebar-submenu <%= isSmartcardSection ? 'show' : '' %>">
-        <a href="/smartcard" class="sidebar-subitem <%= isSmartcardRead ? 'active-sub' : '' %>">
-          <span>อ่านบัตร</span>
-        </a>
-        <a href="/smartcard/logs" class="sidebar-subitem <%= isSmartcardLogs ? 'active-sub' : '' %>">
-          <span>ประวัติการใช้งาน</span>
-        </a>
-      </div>
-    </div>
+    <!-- Smartcard -->
+    <a href="/smartcard" target="_blank" class="list-group-item list-group-item-action <%= isDocs ? 'active' : '' %>">
+      <i class="bi bi-credit-card-2-front"></i>
+      <span>ระบบบัตรประจำประชาชน</span>
+    </a>
 
     <!-- JOB Work -->
     <div class="list-group-item list-group-item-action sidebar-parent <%= isJobWork ? 'active-parent' : '' %>">

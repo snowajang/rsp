@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { prisma } from "./lib/prisma.js";
+import { apiLogger } from './middlewares/apiLogger.js';
 
 import session from 'express-session';
 import swaggerUi from 'swagger-ui-express';
@@ -16,31 +17,6 @@ const app = express();
 
 // const prisma = new PrismaClient();
 const officeID = Number(process.env.OFFICE_ID || "0");
-async function writeApiLog({
-    endpoint,
-    method,
-    reqHeader,
-    reqBody,
-    resStatus,
-    resBody,
-    error
-}) {
-    try {
-        await prisma.apiLog.create({
-            data: {
-                endpoint,
-                method,
-                reqHeader,
-                reqBody,
-                resStatus,
-                resBody,
-                error
-            }
-        });
-    } catch (err) {
-        console.error("LOGGING ERROR:", err);
-    }
-}
 app.use(session({
     secret: process.env.SESSION_SECRET || 'dev_secret',
     resave: false,
@@ -53,7 +29,6 @@ app.use(session({
 app.use((req, res, next) => {
     req.prisma = prisma;     // reuse ตัวเดิม
     req.officeID = officeID;
-    req.writeApiLog = writeApiLog;
     res.locals.currentUser = req.session.user || null;
     res.locals.isAuthenticated = !!req.session.user;
     res.locals.currentPath = req.path;
@@ -72,6 +47,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.json({ limit: '10mb'}));
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(apiLogger);
 
 const routesPath = path.join(__dirname, 'controllers');
 
