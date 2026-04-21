@@ -52,6 +52,9 @@
               <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm">
                 <i class="bi bi-search me-2"></i>ค้นหาข้อมูล
               </button>
+              <button type="button" class="btn btn-warning btn-lg px-4 shadow-sm" onclick="getpidfromsmc()">
+                <i class="bi bi-card me-2"></i>อ่านบัตร
+              </button>
               <a href="<%= routeBase %>" class="btn btn-light btn-lg px-4 border">
                 <i class="bi bi-arrow-clockwise me-2"></i>ล้างค่า
               </a>
@@ -269,6 +272,8 @@
           <i class="bi bi-search-heart fs-1"></i>
         </div>
         <h3 class="h4 fw-bold mb-2">พร้อมสำหรับการค้นหาข้อมูล</h3>
+        <div id="errordiv" class="alert alert-info">
+        </div>
         <p class="text-secondary mb-0">
           กรอกเลขประจำตัวประชาชน 13 หลักด้านบน แล้วกดปุ่มค้นหาข้อมูลเพื่อแสดงรายละเอียดบุคคลและที่อยู่
         </p>

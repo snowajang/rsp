@@ -5,7 +5,7 @@ import { XMLParser } from 'fast-xml-parser';
 const router = Router();
 const xmlParser = new XMLParser({ ignoreAttributes: false });
 
-router.post("/api/death", async (req, res, next) => {
+router.post("/death", async (req, res, next) => {
     try {
         const targetId = req.body.targetId;
         const dob = req.body.dob;
@@ -53,7 +53,7 @@ router.post("/api/death", async (req, res, next) => {
         }
     } catch (error) {
         console.error("Error processing request:", error);
-        return res.status(200).send({ errorNumber: 9999, errorMessage: "พบปัญหาการเชื่อมต่อ กรุณาติดต่อผู้ดูและระบบ", data: data });
+        return res.status(500).send({ isError: true, isErrorDesc: "พบปัญหาการเชื่อมต่อ กรุณาติดต่อผู้ดูและระบบ" });
     }
 });
 
@@ -101,7 +101,7 @@ async function callLaserSoap({ pid, fname, lname, dob, laser, timeoutMs = 20000 
     return { response, xml, json };
 }
 
-router.post('/api/checklaser', async (req, res, next) => {
+router.post('/checklaser', async (req, res, next) => {
     try {
         const { pid, fname, lname, dob, laser } = req.body || {};
 
@@ -164,7 +164,7 @@ router.post('/api/checklaser', async (req, res, next) => {
         return res.status(response.ok ? 200 : 500).json(result);
     } catch (error) {
         console.error('Error in /api/checklaser:', error);       
-        return res.status(200).send({ errorNumber: 9999, errorMessage: "พบปัญหาการเชื่อมต่อ กรุณาติดต่อผู้ดูและระบบ", data: data });
+        return res.status(500).send({ isError: true, isErrorDesc: "พบปัญหาการเชื่อมต่อ กรุณาติดต่อผู้ดูและระบบ" });
     }
 });
 
@@ -207,7 +207,7 @@ async function callChipSoap({ pid, chipno, bp1no, timeoutMs = 20000 }) {
   return { response, xml, json };
 }
 
-router.post('/api/checkchip', async (req, res) => {
+router.post('/checkchip', async (req, res) => {
     try {
         const { pid, chipno, bp1no } = req.body || {};
 
@@ -274,7 +274,7 @@ router.post('/api/checkchip', async (req, res) => {
         return res.status(response.ok ? 200 : 500).json(result);
     } catch (err) {
         console.error('Error in /api/checkchip:', err);
-        return res.status(200).send({ errorNumber: 9999, errorMessage: "พบปัญหาการเชื่อมต่อ กรุณาติดต่อผู้ดูและระบบ", data: data });
+        return res.status(500).send({ isError: true, isErrorDesc: "พบปัญหาการเชื่อมต่อ กรุณาติดต่อผู้ดูและระบบ" });
     }
 });
 

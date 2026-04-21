@@ -64,26 +64,36 @@ async function smcreaderlist(){
 }
 
 function smcopencard(){
+	var btnsubmit = document.getElementById("btnsubmit");
+	btnsubmit.disabled = true;
     document.getElementById('errordiv').innerHTML = "";
 	
-	document.getElementById("pid").innerHTML = "";
-	document.getElementById("xnameTh").innerHTML = "";
-	document.getElementById("xnameEn").innerHTML = "";
-	document.getElementById("xaddress").innerHTML = "";
-	document.getElementById("xbirthDate").innerHTML = "";
-	document.getElementById("xissueDate").innerHTML = "";
-	document.getElementById("xexpiryDate").innerHTML = "";
-	document.getElementById("cid").innerHTML = "";
-	document.getElementById("bp1").innerHTML = "";
-	document.getElementById("laser").innerHTML = "";
+	document.getElementById("pid").innerHTML = "-";
+	document.getElementById("nameTh").innerHTML = "-";
+	document.getElementById("xnameTh").value = "";
+	document.getElementById("nameEn").innerHTML = "-";
+	document.getElementById("xnameEn").value = "";
+	document.getElementById("address").innerHTML = "-";
+	document.getElementById("xaddress").value = "";
+	document.getElementById("birthDate").innerHTML = "-";
+	document.getElementById("xbirthDate").value = "";
+	document.getElementById("issueDate").innerHTML = "-";
+	document.getElementById("xissueDate").value = "";
+	document.getElementById("expiryDate").innerHTML = "-";
+	document.getElementById("xexpiryDate").value = "";
+	document.getElementById("cid").value = "";
+	document.getElementById("bp1").value = "";
+	document.getElementById("laser").value = "";
+	document.getElementById("xlaser").innerHTML = "-";
 	document.getElementById("vimg").setAttribute('src', `images/avatar-999.svg`)
 	document.getElementById("cerpop").innerHTML = "";
+	document.getElementById("xdetail").innerHTML = "";
 	
 	let smc_index = parseInt(document.getElementById("sellk").value); 
 
 	var div_step_1 = document.createElement("p")
 	div_step_1.innerHTML = 'อ่านข้อมูลจากบัตร'
-	document.getElementById("showimagenx").appendChild(div_step_1)
+	document.getElementById("xdetail").appendChild(div_step_1)
 	fetch(`${smclinkread}/${smc_index}`)
 	.then(response => response.json())
 	.then(data => {
@@ -100,7 +110,7 @@ function smcopencard(){
             }
 			var div_step_2 = document.createElement("p")
 			div_step_2.innerHTML = 'อ่านข้อมูลหมายเลขซิป'
-			document.getElementById("showimagenx").appendChild(div_step_2)
+			document.getElementById("xdetail").appendChild(div_step_2)
 			fetch(smclinkreadcid.replace(/umbstring/g, smc_index))
 			.then(response => response.json())
 			.then(data => {
@@ -113,7 +123,7 @@ function smcopencard(){
 				pop.bp1 = data.bp1
 				var div_step_3 = document.createElement("p")
 				div_step_3.innerHTML = 'อ่านข้อมูลเลขกำกับบัตร'
-				document.getElementById("showimagenx").appendChild(div_step_3)
+				document.getElementById("xdetail").appendChild(div_step_3)
 				
 				fetch(smclinkreadlaser.replace(/umbstring/g, smc_index))
 				.then(response => response.json())
@@ -132,7 +142,7 @@ function smcopencard(){
 						pop.cerpop = { image: data.images }			
 						var div_step_4 = document.createElement("p")
 						div_step_4.innerHTML = 'กำลังประมวลผล'
-						document.getElementById("showimagenx").appendChild(div_step_4)
+						document.getElementById("xdetail").appendChild(div_step_4)
 
 						//console.log(emppid)
 						// var postoption = {
@@ -163,13 +173,15 @@ function smcopencard(){
 						document.getElementById("pid").innerHTML = pop.pid
 						document.getElementById("xpid").value = pop.pid
 						// document.getElementById("uname").innerHTML = `${pop.title}${pop.fname} ${pop.mname} ${pop.lname}`
+						document.getElementById("fname").value = `${pop.fname}`
+						document.getElementById("lname").value = `${pop.lname}`
 						document.getElementById("nameTh").innerHTML = `${pop.title}${pop.fname} ${pop.mname} ${pop.lname}`
-						document.getElementById("xnameTh").innerHTML = `${pop.title}${pop.fname} ${pop.mname} ${pop.lname}`
+						document.getElementById("xnameTh").value = `${pop.title}${pop.fname} ${pop.mname} ${pop.lname}`
 						document.getElementById("nameEn").innerHTML = `${pop.etitle}${pop.efname} ${pop.emname} ${pop.elname}`
-						document.getElementById("xnameEn").innerHTML = `${pop.etitle}${pop.efname} ${pop.emname} ${pop.elname}`
+						document.getElementById("xnameEn").value = `${pop.etitle}${pop.efname} ${pop.emname} ${pop.elname}`
 						// document.getElementById("xuname").value = `${pop.title}${pop.fname} ${pop.mname} ${pop.lname}`
 						document.getElementById("birthDate").innerHTML = pop.dob
-						document.getElementById("xbirthDate").innerHTML = pop.dob
+						document.getElementById("xbirthDate").value = pop.dob
 						// document.getElementById("ndob").value = pop.idob
 						document.getElementById("xdob").value = pop.idob
 						document.getElementById("address").innerHTML = pop.address
@@ -180,18 +192,18 @@ function smcopencard(){
 						// document.getElementById("expire_date").innerHTML = pop.dExpiry
 						document.getElementById("expiryDate").innerHTML = pop.dExpiry
 						document.getElementById("xexpiryDate").value = pop.dExpiry
-						document.getElementById("bp1").innerHTML = pop.bp1
+						document.getElementById("xlaser").innerHTML = pop.laser	
+						document.getElementById("bp1").value = pop.bp1
 						// document.getElementById("xbp1").value = pop.bp1
-						document.getElementById("cid").innerHTML = pop.cid
+						document.getElementById("cid").value = pop.cid
 						// document.getElementById("xcid").value = pop.cid
-						document.getElementById("laser").innerHTML = pop.laser	
-						// document.getElementById("xlaser").value = pop.laser	
+						document.getElementById("laser").value = pop.laser	
 						div_step_4.innerHTML = 'กำลังประมวลผล....สำเร็จ'
 						document.getElementById("ximg").value = `data:image/png;base64,${pop.image64.trim()}`
 						document.getElementById("vimg").setAttribute('src', `data:image/png;base64,${pop.image64.trim()}`)
 						
-						var br1 = document.createElement('br');
-						document.getElementById("cerpop").appendChild(br1);
+						// var br1 = document.createElement('br');
+						// document.getElementById("cerpop").appendChild(br1);
 						var buttons = document.createElement("button");
 						buttons.classList.add("btn");
 						buttons.classList.add("btn-success");
@@ -204,13 +216,14 @@ function smcopencard(){
 						document.getElementById("cerpop").appendChild(br2);
 						var br3 = document.createElement('br');
 						document.getElementById("cerpop").appendChild(br3);
-						var buttonsubmit = document.createElement("button");
-						buttonsubmit.classList.add("btn");
-						buttonsubmit.classList.add("btn-primary");
-						buttonsubmit.type = 'submit';
-						buttonsubmit.innerHTML = 'ตรวจสอบบัตร';
-						document.getElementById("cerpop").appendChild(buttonsubmit);
-						
+						// var buttonsubmit = document.createElement("button");
+						// buttonsubmit.classList.add("btn");
+						// buttonsubmit.classList.add("btn-primary");
+						// buttonsubmit.type = 'submit';
+						// buttonsubmit.innerHTML = 'ตรวจสอบบัตร';
+						// document.getElementById("cerpop").appendChild(buttonsubmit);
+						// var btnsubmit = document.getElementById("btnsubmit");
+						btnsubmit.disabled = false;
 						delete pop.image;
 						delete pop.image64;
 						delete pop.r_addr;
@@ -381,4 +394,37 @@ async function smclinkage(){
 		document.getElementById('errordiv').innerHTML = "เนื่องจาก มีปัญหาในการติดต่อสื่อสาร กรุณาตรวจสอบ Agent";
 		document.getElementById('errordiv').classList.add("text-danger");
 	}
+}
+
+function getpidfromsmc() {
+	fetch(smclinkread)
+	.then(data => data.json())
+	.then(data => {
+		if (data.code != 0) {
+			document.getElementById('errordiv').innerHTML = data.desc;
+			document.getElementById('errordiv').classList.add("text-danger");
+		} else {
+			var smc_index = 0; 
+			fetch(`${smclinkread}/${smc_index}`)
+			.then(response => response.json())
+			.then(smc => {
+				if (smc.code != 0){
+					document.getElementById('errordiv').innerHTML = smc.desc;
+					document.getElementById('errordiv').classList.add("text-danger");
+				} else {
+					document.getElementById("pid").value = smc.pop.pid || '';
+				}
+			})
+			.catch(error => {
+				console.log(error);
+				document.getElementById('errordiv').innerHTML = "เนื่องจาก มีปัญหาในการติดต่อสื่อสาร กรุณาตรวจสอบ Agent";
+				document.getElementById('errordiv').classList.add("text-danger");
+			});
+		}
+	})
+	.catch(error => {
+		console.log(error);
+		document.getElementById('errordiv').innerHTML = "เนื่องจาก มีปัญหาในการติดต่อสื่อสาร กรุณาตรวจสอบ Agent";
+		document.getElementById('errordiv').classList.add("text-danger");
+	});
 }

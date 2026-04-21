@@ -14,10 +14,12 @@
       <form method="post">
         <div class="row g-3">
           <div class="col-lg-9">
-            <input id="xdob" type="hidden" />
-            <input id="cid" type="hidden" />
-            <input id="bp1" type="hidden" />
-            <input id="laser" type="hidden" />
+            <input id="fname" name="fname" type="hidden" value="<%= smc?.fname || '' %>" />
+            <input id="lname" name="lname" type="hidden" value="<%= smc?.lname || '' %>" />
+            <input id="xdob" name="xdob" type="hidden" value="<%= smc?.xdob || '' %>" />
+            <input id="cid" name="cid" type="hidden" value="<%= smc?.cid || '' %>" />
+            <input id="bp1" name="bp1" type="hidden" value="<%= smc?.bp1 || '' %>" />
+            <input id="laser" name="laser" type="hidden" value="<%= smc?.laser || '' %>" />
 
             <table class="table table-hover">
               <tbody>
@@ -77,6 +79,13 @@
                     <input id="xexpiryDate" name="expiryDate" type="hidden" value="<%= smc?.expiryDate || '' %>" />
                   </td>
                 </tr>
+                <tr>
+                  <td>Laser</td>
+                  <td>:</td>
+                  <td>
+                    <span id="xlaser" class="text-primary"><%= smc?.laser || '-' %></span>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -92,9 +101,19 @@
             <% } %>
             <input id="ximg" name="image" type="hidden" value="<%= smc?.image || '' %>" />
             <input id="xnimage" name="nimage" type="hidden" value="<%= smc?.nimage || '' %>" />
+            <div id="xdetail" class="text-center mt-2">
+            </div>  
           </div>
 
           <div id="cerpop" class="text-center h6 mt-3"></div>
+          <div class="col-12 text-center">
+            <button id="btnsubmit" type="submit" class="btn btn-success" disabled>ตรวจสอบบัตร</button> 
+            <% if (smc && smc.laserCheck && smc.success) { %>
+              <span class="text-primary"><%= smc.laserCheck %></span>
+            <% } else if (smc && smc.laserCheck && !smc.success)  { %>               
+              <span class="text-danger"><%= smc.laserCheck %></span>
+            <% } %>
+          </div>
         </div>
       </form>
     </div>
